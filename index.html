@@ -1,0 +1,913 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Connect様 Corpora Interim Snapshot v0.1</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;600;700&family=Noto+Sans+JP:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#FAFAF8;--surface:#FFF;--text:#1A1A1A;--text2:#4A4A4A;--muted:#8A8A8A;
+  --border:#E4E2DE;--border-l:#F0EEEA;--accent:#2F2F2F;--accent-l:#F4F4F2;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text);font-size:15px;line-height:2;font-weight:400;-webkit-font-smoothing:antialiased}
+.doc{max-width:1120px;margin:0 auto;padding:24px 0 120px}
+@media(max-width:900px){.doc{padding:0 0 80px}}
+
+/* Header */
+.hdr{padding:56px 44px 48px 224px;border-bottom:1px solid var(--border);margin-bottom:32px}
+.hdr-label{font-size:10px;font-weight:600;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);margin-bottom:18px}
+.hdr h1{font-family:'Noto Serif JP',serif;font-size:26px;font-weight:700;line-height:1.5;margin-bottom:6px}
+.hdr .sub{font-family:'Noto Serif JP',serif;font-size:15.5px;font-weight:400;color:var(--text2);line-height:1.7}
+.hdr .meta{margin-top:24px;font-size:12px;color:var(--muted);line-height:1.8}
+
+/* Disclaimer */
+.disc{border:1px solid var(--border);border-left:3px solid var(--accent);padding:20px 24px;margin:0 44px 32px 224px;font-size:13.5px;line-height:1.95;color:var(--text2)}
+
+/* Sections */
+.sec{margin-bottom:56px}
+.sec-n{font-size:10px;font-weight:600;letter-spacing:.14em;color:var(--muted);margin-bottom:6px}
+.sec>h2{font-family:'Noto Serif JP',serif;font-size:20px;font-weight:600;line-height:1.6;margin-bottom:24px;padding-bottom:12px;border-bottom:1px solid var(--border)}
+.sec h3{font-family:'Noto Serif JP',serif;font-size:16.5px;font-weight:600;line-height:1.6;margin-top:32px;margin-bottom:12px}
+.sec h4{font-size:14.5px;font-weight:600;margin-top:20px;margin-bottom:8px}
+.sec p{margin-bottom:12px;color:var(--text2)}
+hr.sep{border:none;border-top:1px solid var(--border);margin:48px 0}
+
+/* Category header with SVG */
+.cat-hdr{display:flex;align-items:center;gap:10px;margin-top:36px;margin-bottom:18px;padding-bottom:10px;border-bottom:1px solid var(--border-l)}
+.cat-hdr svg{flex-shrink:0}
+.cat-hdr .cat-title{font-family:'Noto Serif JP',serif;font-size:15px;font-weight:600;letter-spacing:.04em}
+.cat-hdr .cat-sub{font-size:12px;color:var(--muted);margin-left:4px}
+
+/* Hypothesis block */
+.hyp{margin-bottom:28px;padding:20px 22px;background:var(--surface);border:1px solid var(--border-l)}
+.hyp h4{margin-top:0;font-size:14px;margin-bottom:10px}
+.hyp p{font-size:13.5px;margin-bottom:8px}
+.hyp .facts{margin-top:10px;padding-top:10px;border-top:1px solid var(--border-l)}
+.hyp .facts-label{font-size:11px;font-weight:600;letter-spacing:.06em;color:var(--muted);margin-bottom:6px}
+.hyp .facts ul{list-style:none;padding:0}
+.hyp .facts li{font-size:13px;color:var(--text2);padding-left:16px;position:relative;margin-bottom:3px;line-height:1.85}
+.hyp .facts li::before{content:'·';position:absolute;left:4px;color:var(--muted);font-weight:700}
+
+/* Session cards */
+.s-card{background:var(--surface);border:1px solid var(--border);padding:26px 28px;margin-bottom:16px}
+.s-card h3{margin-top:0;font-size:15.5px;padding-bottom:10px;border-bottom:1px solid var(--border-l);margin-bottom:14px}
+.s-card p{font-size:13.5px}
+.s-card .s-facts{margin-top:12px}
+.s-card .s-facts h4{font-size:12px;font-weight:600;letter-spacing:.06em;color:var(--muted);margin-bottom:6px;margin-top:14px}
+.s-card .s-facts ul{list-style:none;padding:0}
+.s-card .s-facts li{font-size:13px;color:var(--text2);padding-left:16px;position:relative;margin-bottom:4px;line-height:1.85}
+.s-card .s-facts li::before{content:'—';position:absolute;left:0;color:var(--muted);font-size:12px}
+.s-card .s-hypo{margin-top:14px;padding:12px 16px;background:var(--accent-l);font-size:13px;color:var(--text2);line-height:1.85}
+.s-card .s-hypo strong{font-weight:600;color:var(--text)}
+
+/* BDNA IF/THEN */
+.bdna{margin-bottom:14px;border:1px solid var(--border-l);overflow:hidden}
+.bdna-if{padding:12px 18px;background:var(--accent-l);font-size:13.5px;font-weight:500;display:flex;align-items:center;gap:8px}
+.bdna-if svg{flex-shrink:0;opacity:.5}
+.bdna-then{padding:12px 18px;font-size:13.5px;color:var(--text2);background:var(--surface)}
+
+/* Episode Seeds */
+.ep{background:var(--surface);border:1px solid var(--border);padding:20px 22px;margin-bottom:12px}
+.ep-hdr{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:12px;padding-bottom:10px;border-bottom:1px solid var(--border-l)}
+.ep-hdr h4{font-size:14px;margin:0;line-height:1.5}
+.ep-tags{display:flex;gap:4px;flex-shrink:0;flex-wrap:wrap}
+.ep-tag{font-size:10px;font-weight:600;letter-spacing:.05em;padding:2px 8px;border:1px solid var(--border);color:var(--muted);white-space:nowrap}
+.ep-label{font-size:10.5px;font-weight:600;letter-spacing:.06em;color:var(--muted);margin-top:10px;margin-bottom:3px}
+.ep-label:first-of-type{margin-top:0}
+.ep p{font-size:13px;color:var(--text2);margin-bottom:4px;line-height:1.85}
+
+/* Canvas Table */
+.c-tbl{width:100%;border-collapse:collapse;font-size:12.5px;margin-top:14px}
+.c-tbl th{text-align:left;font-weight:600;font-size:10.5px;letter-spacing:.06em;color:var(--muted);padding:9px 10px;border-bottom:2px solid var(--border);background:var(--bg)}
+.c-tbl td{padding:9px 10px;border-bottom:1px solid var(--border-l);vertical-align:top;line-height:1.75;color:var(--text2)}
+.c-tbl .cc{font-weight:600;font-size:10.5px;letter-spacing:.04em;white-space:nowrap;color:var(--text)}
+.c-tbl .cs{color:var(--muted);font-size:11.5px;white-space:nowrap}
+
+/* Evidence */
+.ev{margin-bottom:18px}
+.ev h4{font-size:13.5px;margin:0 0 4px}
+.ev p{font-size:13px;line-height:1.85}
+
+/* Questions */
+.qi{margin-bottom:20px}
+.qi h4{font-size:14px;margin:0 0 4px}
+.qi p{font-size:13px}
+
+/* Next */
+.nx{padding:16px 20px;background:var(--surface);border:1px solid var(--border-l);margin-bottom:10px}
+.nx h4{font-size:14px;margin:0 0 8px}
+.nx ul{list-style:none;padding:0}
+.nx li{font-size:12.5px;color:var(--text2);padding-left:14px;position:relative;margin-bottom:2px}
+.nx li::before{content:'·';position:absolute;left:3px;color:var(--muted);font-weight:700}
+
+/* Summary */
+.sum{border:1px solid var(--accent);padding:32px}
+.sum p{font-size:14px;line-height:2.1}
+
+/* Word Cloud */
+
+
+/* Layout */
+.layout{display:flex;gap:0;max-width:1120px;margin:0 auto;position:relative}
+.sidebar{width:180px;flex-shrink:0;position:relative}
+.sidebar-inner{position:sticky;top:24px;padding:20px 0 20px 20px}
+.sidebar-inner .toc-label{font-size:9px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-bottom:12px}
+.sidebar-inner a{display:block;font-size:11.5px;color:var(--muted);text-decoration:none;padding:5px 12px;border-left:2px solid transparent;line-height:1.5;transition:all .15s}
+.sidebar-inner a:hover{color:var(--text2)}
+.sidebar-inner a.active{color:var(--text);border-left-color:var(--text);font-weight:500}
+.main{flex:1;min-width:0;padding:0 44px}
+
+@media(max-width:900px){
+  .layout{flex-direction:column}
+  .sidebar{width:100%;position:sticky;top:0;z-index:100;background:var(--bg);border-bottom:1px solid var(--border)}
+  .sidebar-inner{position:static;padding:10px 20px;display:flex;gap:4px;overflow-x:auto;-webkit-overflow-scrolling:touch}
+  .sidebar-inner .toc-label{display:none}
+  .sidebar-inner a{white-space:nowrap;padding:6px 12px;border-left:none;border-bottom:2px solid transparent;font-size:11px}
+  .sidebar-inner a.active{border-left:none;border-bottom-color:var(--text)}
+  .main{padding:0 20px}
+  .hdr{padding:36px 20px 36px 20px}
+  .disc{margin:0 20px 20px 20px}
+}
+
+@media print{body{background:#fff;font-size:12px}.doc{padding:20px}.sidebar{display:none}.layout{display:block}.main{padding:0}.hdr{padding:20px}.disc{margin:0 0 20px 0}.s-card,.ep,.bdna,.nx,.sum,.hyp{break-inside:avoid}}
+</style>
+</head>
+<body>
+<div class="doc">
+
+<header class="hdr" id="sec-top">
+  <div class="hdr-label">Corpora Interim Snapshot</div>
+  <h1>Connect様 Corpora Interim Snapshot v0.1</h1>
+  <p class="sub">セッション0〜3から見えてきた企業人格の輪郭</p>
+  <div class="meta">中間仮説・確認用資料<br>作成：2026年6月　／　対象：Session 0〜3（全7回インタビュー）</div>
+</header>
+
+<div class="disc">本資料は、セッション0〜3の対話内容をもとに、現時点で見えてきたConnect様の企業人格の輪郭を整理した中間仮説です。完成版Corporaではなく、理念・ブランドメッセージ・AI用OSとして確定したものでもありません。今後のインタビュー・追加確認・関係者レビューを通じて更新していく前提の資料です。</div>
+
+
+<div class="layout">
+<nav class="sidebar">
+<div class="sidebar-inner">
+<div class="toc-label">Contents</div>
+<a href="#sec-top" class="active">Top</a>
+<a href="#sec-summary">サマリー</a>
+<a href="#sec-hypothesis">企業人格仮説</a>
+<a href="#sec-evidence">Evidence</a>
+<a href="#sec-episodes">Episode Seeds</a>
+<a href="#sec-canvas">Canvas</a>
+<a href="#sec-wordcloud">Word Cloud</a>
+<a href="#sec-closing">総括</a>
+<a href="#sec-next">深掘り方針</a>
+<a href="#sec-questions">Future Questions</a>
+</div>
+</nav>
+<div class="main">
+
+<div class="sec" id="sec-intro">
+<div class="sec-n">01</div>
+<h2>本資料の位置づけ</h2>
+<p>ここまでの対話から見え始めている、Connect様らしさ、判断軸、美学、越えない線、揺らぎ、語り口、未来への方向性を一度可視化し、次回以降の深掘りの土台にすることが目的です。</p>
+<p>断定ではなく仮説として読んでいただき、「ここは違う」「ここはもっと深い」「ここは言い切れる」といったフィードバックをいただけると、次のセッションの精度が上がります。</p>
+</div>
+
+<hr class="sep">
+
+
+<!-- ===== 02 SESSION SUMMARIES ===== -->
+<div class="sec" id="sec-summary">
+<div class="sec-n">02</div>
+<h2>セッション サマリー</h2>
+
+<div class="s-card">
+<h3>Session 0 ｜源流・個人史・起業前の原体験</h3>
+<p>山田様個人の幼少期からIT業界でのキャリア、起業前の経験までを中心に伺いました。</p>
+<div class="s-facts">
+<h4>語られた事実</h4>
+<ul>
+<li>幼少期、裏山に秘密基地を作り、勉強ができる子から後に道を外す子まで多様な仲間とチームを組んでいた</li>
+<li>父親が外面では良い顔をし、家庭では厳しく当たる姿を見て「飾る大人」への嫌悪感が生まれた</li>
+<li>サッカーの90分の中で必ず来るチャンスを逃さないという確率論的思考を営業にも応用した</li>
+<li>前職で仲間と信じていた人たちが金銭をめぐって変わり、「人なんか信じる意味ない」と感じた時期があった</li>
+<li>リーマンショック時に「どっちかいらないからクビ」と言われた怒りが「この会社に絶対負けない」という起業の燃料になった</li>
+<li>起業前に副業で本業の給与を超え、多くの経営者と関わる中で「この程度なのか」と感じた</li>
+<li>社名「コネクト」は共同代表の大松氏の「繋がりを大切にする」姿勢があって初めて名乗れたもので、自分一人では名乗れないと感じている</li>
+<li>売上のために嘘をつく、売りたくないものを売ることが最も嫌な行為として語られた</li>
+</ul>
+<h4>ここから見える仮説</h4>
+</div>
+<div class="s-hypo"><strong>仮説：</strong>Connect様の源流には、「多様な人と一緒に何かを作る面白さ」と「飾らず、魂を売らない」という二つの原体験が強く存在している可能性があります。秘密基地は居場所であると同時に、チーム形成の原型であり、父親への反発は「裏表を持たない」という姿勢の根を形成しているように見えます。</div>
+</div>
+
+<div class="s-card">
+<h3>Session 1 ｜起源とパーパス（2回）</h3>
+<p>創業の動機、初期の取引、楽天様との関係、失敗と学び、そして「秘密基地の再定義」まで伺いました。</p>
+<div class="s-facts">
+<h4>語られた事実</h4>
+<ul>
+<li>創業の動機は「怒り」と「理想」——IT業界の多重下請け構造への怒りと、チームで成功を証明するという理想</li>
+<li>セールス部門を持たず、リピートと品質で回すビジネスモデルを選んだ</li>
+<li>楽天一社に絞り、大手（アクセンチュア等）が重視しない特定サービス開発に集中する「選択と集中」戦略をとった</li>
+<li>カフェ事業で▲4,000万の赤字。大きく始めすぎた資本戦略の失敗と財務管理の重要性を学んだ</li>
+<li>モンゴル事業ではコロナ直前に危機を察知し売却。横領金だと判明した資金を差し押さえ前に送金する綱渡りを経験</li>
+<li>ジョイント事業はほぼ全て失敗。パートナーが目先の自己利益を優先する傾向にあった</li>
+<li>現在の会社は秘密基地の「0号目」で、まだスタートラインに立ったばかりという認識</li>
+<li>成功の定義として、売上・規模ではなく「人が育つ環境」が先に語られた。思いやり・自立・優しさ・楽しむ・高め合う</li>
+<li>仕事は「無条件に人と会えるもの」、人と時間を共有するためのプラットフォーム</li>
+<li>最も許せないのは、人をリソース扱いする経営者</li>
+<li>相手のための嘘は喜んでつくが、自分のための嘘は嫌。100%相手が主語かどうかが境界線</li>
+<li>閃きのプロセス：大量の情報を詰め込み、脳を疲労させ、潜在意識から答えを引き出す</li>
+<li>弟が統合失調症を経て自死。創業メンバーの一人も失った。仕事で人を良くしたいという願いの根底にある</li>
+<li>海外展開は「思想の実験」——新環境で思想をブラッシュアップする</li>
+</ul>
+<h4>ここから見える仮説</h4>
+</div>
+<div class="s-hypo"><strong>仮説：</strong>Connect様の起源には「怒り×理想」という強い二重構造があり、それが「人をリソースとして扱わない」「品質と実行力で勝つ」という明確な禁忌と美学を生んでいる可能性があります。一方で、情の厚さが経営判断を揺らがせる場面もあり、この「優しさと経営」の緊張関係は企業人格の重要な構成要素になりそうです。弟や創業メンバーの喪失は、この姿勢の最も深い根にある可能性があります。</div>
+</div>
+
+<div class="s-card">
+<h3>Session 2 ｜文化と行動指針（2回）</h3>
+<p>意思決定の基準、マネジメント、OK/NGの判断基準、文化と儀式について伺いました。AIペルソナのデモも実施。</p>
+<div class="s-facts">
+<h4>語られた事実</h4>
+<ul>
+<li>AIペルソナの精度が高く、「まるで自分が話しているよう」と山田様が評価。自己分析ツールとしての可能性も示された</li>
+<li>基本方針は「まず試させる」。失敗が会社にクリティカルでない限り止めない。ただし小さく始める</li>
+<li>撤退に抵抗がない——「またやればいい」。撤退が難しい経営者が多い中で異例の姿勢</li>
+<li>求めるフィードバックは「何が分かったか」という正確な情報。言い訳ではなく事実</li>
+<li>「人が良い」が会社の最大の強み。採用基準は「言行一致している人」「性格が良い人」</li>
+<li>上司に向いていない人は配置を変える。役職は偉い・偉くないではなく「役割の違い」</li>
+<li>社内で売上の話はほとんどしない。売上は設計の結果として自然についてくるもの</li>
+<li>表彰制度は「言行不一致」を生む可能性があるため導入しない</li>
+<li>2018年の民泊プロジェクトでメンバーが潰れた。「大丈夫」を鵜呑みにしない教訓を得た</li>
+<li>困難な状況で適性が炙り出される——レモンを絞り切った後のように違いが見える</li>
+<li>10年以上の対話で人を育てようとしたが、無理に成長させるのではなく「そのままで良い」と割り切るようになった</li>
+<li>会社はあくまで「コミュニティ」「手段」——従業員の人生にベネフィットを与えることが目的</li>
+<li>「はみ出し者」を歓迎する文化。一般的な会社にフィットしない人が多い</li>
+<li>カフェ閉鎖時、役員の小川氏が「赤字を1年で取り戻す」と燃えた。他者に委ねる学び</li>
+</ul>
+<h4>ここから見える仮説</h4>
+</div>
+<div class="s-hypo"><strong>仮説：</strong>Connect様の文化は「心理的安全性」と「言行一致」の二本柱で支えられている可能性があります。売上を語らない、表彰しない、はみ出しを歓迎する——これらは「評価への恐怖を取り除き、本音で生きられる環境を作る」という一貫した設計思想として見えます。一方で、自由すぎる文化が未経験者に誤解されるリスクも認識されており、この翻訳が今後の課題です。</div>
+</div>
+
+<div class="s-card">
+<h3>Session 3 ｜哲学とブランド（2回）</h3>
+<p>プロダクト哲学、品質基準、ブランド、社会との接点、AI時代の組織戦略について伺いました。</p>
+<div class="s-facts">
+<h4>語られた事実</h4>
+<ul>
+<li>自社の製品・サービスを一言で表すなら「当たり前のことを当たり前にする」</li>
+<li>要求に対して約束できないことはしない。チームのレベルに合わせてサービス目標も下げる</li>
+<li>スタッフ保護のために高額案件でも断る。苦労に見合わない仕事をさせるのは「不義」</li>
+<li>取引相手を「パートナー」として見てくれるかが最低限の条件。金額から入るバイヤー感覚の人とはやらない</li>
+<li>システム構築とは「相手の考えを可視化させること」であり、対話ができない相手とは不可能</li>
+<li>組織としてのConnect様を例えると「職人」「大工」のような集団。戦略より実行力に強み</li>
+<li>「やりたい」より「できる」を重視。やりたいと任せて失敗すると個人の責任に帰結しがちだが、できる人に任せれば会社の責任を果たせる</li>
+<li>「責任を取る」ことと「自由になる」ことは表裏一体。責任は自由に行動するためのチケット</li>
+<li>会社の社会貢献は、まず8時間の労働時間を良くすること。身近なところから</li>
+<li>日本市場の縮小に危機意識。Connect様の役割は「日本の価値を世界へ届けるインフラ」</li>
+<li>「良い組織という土作り」が研究テーマ——有機農家のような経営哲学</li>
+<li>やばいことほど先に報告させる。良い報告は後でいい</li>
+<li>10年後も守るべきは「率直性」「自律性」「成長し続けること」</li>
+<li>AI時代には構造化能力と人間性の両方が不可欠。言語化できない人はAI以前に厳しくなる</li>
+</ul>
+<h4>ここから見える仮説</h4>
+</div>
+<div class="s-hypo"><strong>仮説：</strong>Connect様のプロダクト哲学は、一見シンプルな「当たり前をやる」に見えて、実は非常に高い基準を内包しています。約束できないなら受けない、スタッフを守るために断る、対話できない相手とは作らない——これらは「誰のためにやるか」が常に問われる設計であり、Connect様の美学の核になっている可能性があります。</div>
+</div>
+</div>
+
+<hr class="sep">
+
+<!-- ===== 03 HYPOTHESES ===== -->
+<div class="sec" id="sec-hypothesis">
+<div class="sec-n">03</div>
+<h2>現時点で見えてきた企業人格仮説</h2>
+
+<!-- CORE -->
+<div class="cat-hdr">
+<svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="#2F2F2F" stroke-width="1.5"><circle cx="10" cy="10" r="8"/><circle cx="10" cy="10" r="4"/><circle cx="10" cy="10" r="1" fill="#2F2F2F"/></svg>
+<span class="cat-title">CORE</span><span class="cat-sub">中核価値</span>
+</div>
+<p style="font-size:14px;color:var(--text2);margin-bottom:20px">Connect様の中核には、「人が育つ秘密基地を作り続ける」「売上より人へのインパクトを先に見る」「仕事は人と会うための大義名分である」という三つの価値が繰り返し現れています。これらは業績目標や戦略ではなく、山田様の原体験——秘密基地づくり、仲間との協働、父親の外面への反発——に根ざしている可能性があります。</p>
+
+<div class="hyp">
+<h4>1. 人が育つ「秘密基地」を作る</h4>
+<p>仲間が集まり、役割が生まれ、安心して挑戦でき、人が育ち、ここにいてよかったと思える場。会社を単なる事業体ではなく、人が育ち関係が生まれ次の挑戦が起きる場として捉えている可能性があります。</p>
+<div class="facts"><div class="facts-label">支える事実</div><ul>
+<li>幼少期の秘密基地づくりが、現在のチームづくりの原型（S0）</li>
+<li>現在の会社は「0号目」「スタートライン」——完成を誇らず、まだ作っていく途上（S1）</li>
+<li>今やりたいことは「秘密基地を作り続けること」（S1）</li>
+</ul></div>
+</div>
+<div class="hyp">
+<h4>2. 売上よりも「人へのインパクト」を先に見る</h4>
+<p>喜ばれること、人が変化すること、仕事を通じて人生が良くなること。売上は目的ではなく、良い仕事・良い関係の結果としてついてくるもの、という仮説が置けます。</p>
+<div class="facts"><div class="facts-label">支える事実</div><ul>
+<li>成功の定義として売上・規模より「人が育つ環境」が先に語られた（S1）</li>
+<li>社内で売上の話はほとんどしない（S2）</li>
+<li>社会貢献はまず「8時間の労働時間を良くする」ことから（S3）</li>
+</ul></div>
+</div>
+<div class="hyp">
+<h4>3. 仕事は「人と会える大義名分」</h4>
+<p>仕事だからこそ人と会え、同じ時間を過ごせ、同じ景色を共有できる。仕事をプラットフォームとして捉える独自の仕事観。</p>
+<div class="facts"><div class="facts-label">支える事実</div><ul>
+<li>「仕事は無条件に人と会えるもの」（S1）</li>
+<li>仕事を通じて同じ景色や思い出を共有できることが価値（S1）</li>
+<li>会社はコミュニティであり、事業はコミュニティに価値を与える手段（S2）</li>
+</ul></div>
+</div>
+
+<!-- AEST -->
+<div class="cat-hdr">
+<svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="#2F2F2F" stroke-width="1.5"><path d="M10 2L12.5 7.5H18L13.5 11.5L15.5 17.5L10 13.5L4.5 17.5L6.5 11.5L2 7.5H7.5Z"/></svg>
+<span class="cat-title">AESTHETICS</span><span class="cat-sub">美意識・美学</span>
+</div>
+<p style="font-size:14px;color:var(--text2);margin-bottom:20px">Connect様の美学は「ちゃんと作る」「約束できることだけ言う」「最後まで話す」「現実を直視する」に集約されつつあります。華やかさやスケールではなく、誠実さ・実行力・対話に美を見出す傾向が見えています。</p>
+
+<div class="hyp">
+<h4>1. 本当に物づくりできることは美しい</h4>
+<p>「職人」「大工」のように、語るだけではなくちゃんと作ることへの誇り。相手の考えを理解し、可視化し、品質を担保し、最後まで責任を持つ一連の姿勢。</p>
+<div class="facts"><div class="facts-label">支える事実</div><ul>
+<li>組織を例えると「職人」「大工」のような集団（S3）</li>
+<li>顧客トラブルがほぼない——品質力が長期関係の源泉（S3）</li>
+<li>システム構築とは「相手の考えを可視化させること」（S3）</li>
+</ul></div>
+</div>
+<div class="hyp">
+<h4>2. 約束できることだけを約束する</h4>
+<p>できないことをできると言わない。チームのレベルに合わせて目標を下げることも厭わない。品質観・顧客観・スタッフ保護の中心にある美学。</p>
+<div class="facts"><div class="facts-label">支える事実</div><ul>
+<li>「うちではない方がいい」と断ることがある（S3）</li>
+<li>スタッフの苦労に見合わない案件は「不義」（S3）</li>
+<li>売上目標を決めて無理な拡大戦略を取ったことは一度もない（S3）</li>
+</ul></div>
+</div>
+<div class="hyp">
+<h4>3. 最後まで話す</h4>
+<p>どの場面でも一方的に切るのではなく、最後まで話す。単なる優しさではなく、現実を直視するための行為。</p>
+<div class="facts"><div class="facts-label">支える事実</div><ul>
+<li>ジョイント事業の終わりも最後まで話し合って終わらせてきた（S1）</li>
+<li>スタッフに対して泣いてスッキリするほどの「言える環境」を提供（S3）</li>
+<li>10年以上の対話による育成を続けた経験がある（S2）</li>
+</ul></div>
+</div>
+<div class="hyp">
+<h4>4. 現実を直視する勇気</h4>
+<p>楽観的に見ず、数字・背景・人・構造を含めて把握する。経営者として最も大切にしている姿勢。</p>
+<div class="facts"><div class="facts-label">支える事実</div><ul>
+<li>「現状に対する理解」「楽観的に見ない意識的な努力」が最も大切（S3）</li>
+<li>カフェ事業▲4,000万を直視し撤退を決断（S1）</li>
+</ul></div>
+</div>
+
+<!-- TABO -->
+<div class="cat-hdr">
+<svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="#2F2F2F" stroke-width="1.5"><line x1="4" y1="4" x2="16" y2="16"/><line x1="4" y1="16" x2="16" y2="4"/><circle cx="10" cy="10" r="8"/></svg>
+<span class="cat-title">TABOO</span><span class="cat-sub">禁忌・越えない線</span>
+</div>
+<p style="font-size:14px;color:var(--text2);margin-bottom:20px">最も強い禁忌は「人をリソースとして扱うこと」。これに「自分都合の嘘」「魂を売る売上」「下請け扱いへの甘受」が続きます。いずれも山田様の原体験——IT業界の構造への怒り、父親の外面への嫌悪——に根ざしている可能性があります。</p>
+
+<div class="hyp">
+<h4>1. 人をリソースとして扱うこと</h4>
+<p>IT業界の多重下請け構造、人を集めて売るモデルへの怒りが創業動機に直結。人は売上を作る機能ではなく、人格・時間・人生を持つ存在。</p>
+<div class="facts"><div class="facts-label">支える事実</div><ul><li>多重下請け構造への怒りが創業の強い動機（S0/S1）</li><li>「人を金になるリソースのように扱う経営者」が最も許せない（S1）</li></ul></div>
+</div>
+<div class="hyp">
+<h4>2. 自分都合の嘘</h4>
+<p>保身・執着・自己都合から生まれる嘘を嫌う。相手のための配慮と、自分を守るための嘘は違う。</p>
+<div class="facts"><div class="facts-label">支える事実</div><ul><li>相手のための嘘は喜んでつくが、自分のための嘘は嫌（S1）</li><li>嘘の境界線は「100%相手が主語かどうか」（S1）</li></ul></div>
+</div>
+<div class="hyp">
+<h4>3. 売上のために魂を売ること</h4>
+<p>良いと思えないものを売る、営業都合で押し込む行為。</p>
+<div class="facts"><div class="facts-label">支える事実</div><ul><li>売りたくないものを売ることが最も嫌な行為（S0）</li><li>儲かるだけで情熱がない投資はしない（S2）</li></ul></div>
+</div>
+<div class="hyp">
+<h4>4. 下請け扱いされる関係に居続けること</h4>
+<p>パートナーとして対話できるかが最低限の条件。</p>
+<div class="facts"><div class="facts-label">支える事実</div><ul><li>金額から入るバイヤー感覚の人とはやらない（S3）</li><li>対話ができない相手とのシステム構築は不可能（S3）</li></ul></div>
+</div>
+
+<!-- TENS -->
+<div class="cat-hdr">
+<svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="#2F2F2F" stroke-width="1.5"><path d="M2 14 Q6 6, 10 10 Q14 14, 18 6"/></svg>
+<span class="cat-title">TENSION</span><span class="cat-sub">揺らぎ・価値衝突</span>
+</div>
+<p style="font-size:14px;color:var(--text2);margin-bottom:20px">美学と現実、禁忌と事情がぶつかった時の迷い方。Connect様の企業人格は「きれいな一貫性」ではなく、この揺らぎの中にこそ本質がある可能性があります。</p>
+
+<div class="hyp">
+<h4>1. 優しさ vs 経営判断</h4><p>人を助けたい、最後まで向き合いたい。一方でその情が組織に負荷をかける。</p>
+<div class="facts"><div class="facts-label">支える事実</div><ul><li>ジョイント事業で情に厚い対応をしたが、経営としては「愚か」だったと自認（S1）</li><li>弟や身内の支援で組織メンバーに迷惑をかけた葛藤（S1）</li></ul></div>
+</div>
+<div class="hyp">
+<h4>2. 自由 vs 責任</h4><p>責任は自由のチケットだが、日本語の「責任」には懲罰のニュアンスがある。このギャップが組織運営の課題。</p>
+<div class="facts"><div class="facts-label">支える事実</div><ul><li>責任＝自由に行動するためのチケットとして再定義（S3）</li><li>自由すぎる文化が未経験者に誤解されるリスク（S2）</li></ul></div>
+</div>
+<div class="hyp">
+<h4>3. やりたいこと vs できること</h4><p>冷たい能力主義ではなく、三者を守る配置思想。しかし採用メッセージとのズレが生まれうる。</p>
+<div class="facts"><div class="facts-label">支える事実</div><ul><li>「やりたい」と任せて失敗すると個人責任に帰結しがち。「できる」人に任せれば会社の責任を果たせる（S3）</li><li>本当にやりたいことは言われる前に既に動いている（S1）</li></ul></div>
+</div>
+<div class="hyp">
+<h4>4. 職人集団 vs 思想実装への進化</h4><p>「作れる会社」から「思想を実装できる会社」へ。AI時代・海外展開における重要なテーマ。</p>
+<div class="facts"><div class="facts-label">支える事実</div><ul><li>現時点では実行力に強み、戦略や設計はこれから（S3）</li><li>AI活用には構造化能力と人間性の両方が不可欠（S3）</li></ul></div>
+</div>
+
+<!-- BDNA -->
+<div class="cat-hdr">
+<svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="#2F2F2F" stroke-width="1.5"><path d="M4 16 L4 10 L10 10 L10 4 L16 4"/><polyline points="13,1 16,4 13,7"/></svg>
+<span class="cat-title">BEHAVIOR DNA</span><span class="cat-sub">行動DNA</span>
+</div>
+<p style="font-size:14px;color:var(--text2);margin-bottom:20px">Connect様が特定の状況でどう動くかの行動パターン。IF（条件）→ THEN（行動）の形式で整理しています。</p>
+
+<div class="bdna">
+<div class="bdna-if"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="#888" stroke-width="1.2"><path d="M2 7h10M7 2v10"/></svg>IF：約束できないと判断したら</div>
+<div class="bdna-then">THEN：受けない。できない理由を率直に伝え、スタッフを守る。</div>
+</div>
+<div class="bdna">
+<div class="bdna-if"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="#888" stroke-width="1.2"><path d="M2 7h10M7 2v10"/></svg>IF：相手がパートナーではなく下請けとして扱ってくるなら</div>
+<div class="bdna-then">THEN：距離を置く。金額や立場ではなく、対話できるかを見る。</div>
+</div>
+<div class="bdna">
+<div class="bdna-if"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="#888" stroke-width="1.2"><path d="M2 7h10M7 2v10"/></svg>IF：やばいこと・トラブルが起きたら</div>
+<div class="bdna-then">THEN：良い報告より先に、悪い報告を上げる。やばいことほど先に言う。</div>
+</div>
+<div class="bdna">
+<div class="bdna-if"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="#888" stroke-width="1.2"><path d="M2 7h10M7 2v10"/></svg>IF：人の適性を見極めたいなら</div>
+<div class="bdna-then">THEN：言葉（やりたい）ではなく行動（すでに動いているか）を見る。</div>
+</div>
+<div class="bdna">
+<div class="bdna-if"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="#888" stroke-width="1.2"><path d="M2 7h10M7 2v10"/></svg>IF：人が迷っている・対立しているなら</div>
+<div class="bdna-then">THEN：背景・感情・現実をすり合わせるまで対話する。一方的に切らない。</div>
+</div>
+<div class="bdna">
+<div class="bdna-if"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="#888" stroke-width="1.2"><path d="M2 7h10M7 2v10"/></svg>IF：情が入りすぎていると気づいたら</div>
+<div class="bdna-then">THEN：直感と情を分離し、その判断が本当に相手のためか疑う。</div>
+</div>
+<div class="bdna">
+<div class="bdna-if"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="#888" stroke-width="1.2"><path d="M2 7h10M7 2v10"/></svg>IF：新しい事業を立ち上げるなら</div>
+<div class="bdna-then">THEN：初期は自分が強く関与する。小さく始めて早く学ぶ。人任せにしない。</div>
+</div>
+<div class="bdna">
+<div class="bdna-if"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="#888" stroke-width="1.2"><path d="M2 7h10M7 2v10"/></svg>IF：メンバーが「大丈夫」と言っているなら</div>
+<div class="bdna-then">THEN：鵜呑みにしない。行動と状態を観察し、言行一致しているか確認する。</div>
+</div>
+<div class="bdna">
+<div class="bdna-if"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="#888" stroke-width="1.2"><path d="M2 7h10M7 2v10"/></svg>IF：失敗が確定したなら</div>
+<div class="bdna-then">THEN：撤退に抵抗しない。「またやればいい」。そこから学びを正確に抽出する。</div>
+</div>
+<div class="bdna">
+<div class="bdna-if"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="#888" stroke-width="1.2"><path d="M2 7h10M7 2v10"/></svg>IF：成長を望まない人がいるなら</div>
+<div class="bdna-then">THEN：押し付けない。その人に合った仕事を提供し、評価には差をつける。</div>
+</div>
+
+<!-- TONE -->
+<div class="cat-hdr">
+<svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="#2F2F2F" stroke-width="1.5"><path d="M4 6 Q4 4 6 4 H14 Q16 4 16 6 V12 Q16 14 14 14 H8 L4 18 V14 Q4 14 4 12 Z"/></svg>
+<span class="cat-title">TONE</span><span class="cat-sub">語り口・距離感</span>
+</div>
+<p style="font-size:14px;color:var(--text2);margin-bottom:12px">率直で飾らず、大風呂敷を広げない。本音に近く、現実ベース。ときにドライに見えるが、根底には人への関心がある。「どう思う？」と問いかけ、「期待している」より「絶対できると思う」に近い言葉で伝える。正解を押し付けるより、自分の考えとして差し出す。ただし外部向け・採用向け・社内向けでどこまでこの率直さを出すかは今後調整が必要です。</p>
+
+</div>
+
+<hr class="sep">
+
+<!-- ===== 04 EVIDENCE ===== -->
+<div class="sec" id="sec-evidence">
+<div class="sec-n">04</div>
+<h2>Evidence Highlights</h2>
+<p style="margin-bottom:20px">企業人格の根拠になりそうな発言・出来事を要約します。</p>
+<div class="ev"><h4>1. 秘密基地</h4><p>幼少期の秘密基地づくりが会社づくり・チームづくりの原型。多様な人が集まり役割が生まれる体験がConnect様の組織観に繋がっている。</p></div>
+<div class="ev"><h4>2. 0号目</h4><p>現在の会社を「スタートライン」と捉え、完成を誇らない。まだ作っていく感覚が強い。</p></div>
+<div class="ev"><h4>3. 人が育つ環境</h4><p>成功の定義として売上・規模より先に語られる。思いやり・自立・優しさ・楽しむ・高め合う。</p></div>
+<div class="ev"><h4>4. 人をリソース扱いしない</h4><p>多重下請け構造への怒りが創業の強い動機。</p></div>
+<div class="ev"><h4>5. 仕事は人と会える大義名分</h4><p>人と時間を共有し、同じ景色を見るためのプラットフォーム。</p></div>
+<div class="ev"><h4>6. 約束できないことはしない</h4><p>品質・顧客対応において一貫。スタッフ保護と直結。</p></div>
+<div class="ev"><h4>7. やりたいより、できる</h4><p>採用・配置・育成で実際にできること、自然に動いていることを重視。</p></div>
+<div class="ev"><h4>8. 責任は自由のチケット</h4><p>責任は罰ではなく自由に動ける権限。一般的な責任観とのギャップが翻訳テーマ。</p></div>
+<div class="ev"><h4>9. 8時間の労働時間を良くする</h4><p>社会貢献は大きな理念からではなく、まず身近な8時間から。</p></div>
+<div class="ev"><h4>10. 日本の価値を世界へつなぐ土台</h4><p>海外展開は市場拡大ではなく、思想の実験と価値のインフラ化。</p></div>
+<div class="ev"><h4>11. 仕事を通じて人を救いたいという願い</h4><p>弟の統合失調症と自死、創業メンバーの喪失。「せめて関われる人は」という切実な動機が、人に向き合い続ける姿勢の最深層にある可能性。</p></div>
+</div>
+
+<hr class="sep">
+
+<!-- ===== 05 EPISODE SEEDS ===== -->
+<div class="sec" id="sec-episodes">
+<div class="sec-n">05</div>
+<h2>Episode Seeds</h2>
+<p style="margin-bottom:20px">議事録から抽出した、企業人格の根拠となりうるエピソードの種です。各エピソードにCanvasカテゴリのタグを付与しています。</p>
+
+<div class="ep"><div class="ep-hdr"><h4>秘密基地の原体験</h4><div class="ep-tags"><span class="ep-tag">CORE</span><span class="ep-tag">SYMBOL</span></div></div>
+<div class="ep-label">何が起きたか</div><p>幼少期、裏山に仲間と秘密基地を作り、多様な人たちを巻き込んで役割を作っていた。建設現場から資材を持ってくるような行動力も含めて。</p>
+<div class="ep-label">会社らしさ</div><p>人が集まり、役割が生まれ、何かを一緒に作る場としての「会社」の原型。</p>
+<div class="ep-label">深掘りしたい点</div><p>秘密基地が拡大した時に何を守り何を変えるのか。</p></div>
+
+<div class="ep"><div class="ep-hdr"><h4>父親の外面と内面のギャップ</h4><div class="ep-tags"><span class="ep-tag">TABOO</span><span class="ep-tag">CORE</span></div></div>
+<div class="ep-label">何が起きたか</div><p>父親が人前で良い顔をし、家庭で厳しく当たる姿を見て「かっこ悪い」と感じ、飾らない態度を取るようになった。</p>
+<div class="ep-label">会社らしさ</div><p>「裏表を持たない」「嘘をつかない」の根っこ。建前と本音の乖離への嫌悪が企業文化に転写されている可能性。</p>
+<div class="ep-label">深掘りしたい点</div><p>この原体験が採用やマネジメントにどう影響しているか。</p></div>
+
+<div class="ep"><div class="ep-hdr"><h4>サッカーと確率論的思考</h4><div class="ep-tags"><span class="ep-tag">HEURISTICS</span></div></div>
+<div class="ep-label">何が起きたか</div><p>90分の試合の中で必ずボールが転がってくるチャンスがあると信じ、その確率論を営業に応用。</p>
+<div class="ep-label">会社らしさ</div><p>チャンスを待ち、来た時に確実に決める。「うねり」を起こす感覚。</p>
+<div class="ep-label">深掘りしたい点</div><p>この感覚が事業判断にどう活きているか。</p></div>
+
+<div class="ep"><div class="ep-hdr"><h4>前職の裏切りとリーマンショック</h4><div class="ep-tags"><span class="ep-tag">CORE</span><span class="ep-tag">TENSION</span></div></div>
+<div class="ep-label">何が起きたか</div><p>仲間と信じた人たちが金銭で変わり、リーマンショック時に「クビ」と言われた。「この会社に絶対負けない」が起業の燃料になった。</p>
+<div class="ep-label">会社らしさ</div><p>消去法としての起業。怒りと理想の二重構造。</p>
+<div class="ep-label">深掘りしたい点</div><p>この怒りは今も燃えているのか、昇華されたのか。</p></div>
+
+<div class="ep"><div class="ep-hdr"><h4>社名「コネクト」——一人では名乗れない</h4><div class="ep-tags"><span class="ep-tag">CORE</span><span class="ep-tag">SYMBOL</span></div></div>
+<div class="ep-label">何が起きたか</div><p>共同代表・大松氏の「繋がりを大切にする」姿勢があって初めて名乗れた名前。自分一人では「コネクト」は重すぎると感じている。</p>
+<div class="ep-label">会社らしさ</div><p>会社名そのものが「一人ではない」ことの証。</p>
+<div class="ep-label">深掘りしたい点</div><p>「Connect」の意味は今後どう広がっていくか。</p></div>
+
+<div class="ep"><div class="ep-hdr"><h4>IT業界の多重下請けへの怒り</h4><div class="ep-tags"><span class="ep-tag">TABOO</span><span class="ep-tag">CORE</span></div></div>
+<div class="ep-label">何が起きたか</div><p>人を集めて売るモデルへの強い違和感。そうではないやり方で勝てることを証明しようとした。</p>
+<div class="ep-label">会社らしさ</div><p>セールス部門を持たない、リピートで回す。反骨心の設計化。</p>
+<div class="ep-label">深掘りしたい点</div><p>この怒りが現在の営業・顧客選定にどう残っているか。</p></div>
+
+<div class="ep"><div class="ep-hdr"><h4>楽天一本勝負と選択と集中</h4><div class="ep-tags"><span class="ep-tag">HEURISTICS</span><span class="ep-tag">BEHAVIOR DNA</span></div></div>
+<div class="ep-label">何が起きたか</div><p>大手競合がいる中で楽天に絞り、特定領域に集中。品質・コスト・実行力で選ばれた。</p>
+<div class="ep-label">会社らしさ</div><p>資本力ではなく、勝てる場所を見極めて集中する。</p>
+<div class="ep-label">深掘りしたい点</div><p>現在の事業選定でこの「勝てる場所」の見立てはどう働いているか。</p></div>
+
+<div class="ep"><div class="ep-hdr"><h4>兜町7平米の秘密基地オフィス</h4><div class="ep-tags"><span class="ep-tag">SYMBOL</span></div></div>
+<div class="ep-label">何が起きたか</div><p>文房具屋の名刺、Wixのサイト、自転車通勤。手作りの秘密基地のような環境で創業。</p>
+<div class="ep-label">会社らしさ</div><p>華やかさではなく、手触りのある場所から始める。</p>
+<div class="ep-label">深掘りしたい点</div><p>この原風景が今のオフィス文化にどう残っているか。</p></div>
+
+<div class="ep"><div class="ep-hdr"><h4>カフェ事業の失敗（▲4,000万）</h4><div class="ep-tags"><span class="ep-tag">HEURISTICS</span><span class="ep-tag">TENSION</span></div></div>
+<div class="ep-label">何が起きたか</div><p>神楽坂の古民家カフェを大きく始めすぎて赤字。資本戦略・ブランディングの失敗を経験。</p>
+<div class="ep-label">会社らしさ</div><p>「小さく始める」「人任せにしない」の学びの源泉。</p>
+<div class="ep-label">深掘りしたい点</div><p>今後の新規事業でどの条件が揃えば進めるのか。</p></div>
+
+<div class="ep"><div class="ep-hdr"><h4>ジョイント事業の失敗パターン</h4><div class="ep-tags"><span class="ep-tag">HEURISTICS</span><span class="ep-tag">TENSION</span></div></div>
+<div class="ep-label">何が起きたか</div><p>共同事業はほぼ全て失敗。パートナーが目先の自己利益を優先し、長期的な相互利益の追求が困難だった。</p>
+<div class="ep-label">会社らしさ</div><p>情と経営判断の揺らぎ。最後まで向き合ったことへの誇り。</p>
+<div class="ep-label">深掘りしたい点</div><p>ジョイントの判断基準は今どう更新されているか。</p></div>
+
+<div class="ep"><div class="ep-hdr"><h4>弟の自死と「人を良くしたい」という願い</h4><div class="ep-tags"><span class="ep-tag">CORE</span><span class="ep-tag">TENSION</span></div></div>
+<div class="ep-label">何が起きたか</div><p>弟が統合失調症を経て亡くなり、創業メンバーの一人も自死で失った。ベストを尽くしても救えなかった無力感。</p>
+<div class="ep-label">会社らしさ</div><p>「せめて関われる人は」という切実な願い。人に向き合い続ける姿勢の最深層。</p>
+<div class="ep-label">深掘りしたい点</div><p>この経験が現在の組織づくりにどう影響しているか。</p></div>
+
+<div class="ep"><div class="ep-hdr"><h4>嘘の美学——100%相手が主語かどうか</h4><div class="ep-tags"><span class="ep-tag">AESTHETICS</span><span class="ep-tag">TABOO</span></div></div>
+<div class="ep-label">何が起きたか</div><p>相手のための嘘は喜んでつく。自分のための嘘は嫌。境界線は「100%相手が主語か」。</p>
+<div class="ep-label">会社らしさ</div><p>嘘を一律否定するのではなく、動機で判断する繊細な美学。</p>
+<div class="ep-label">深掘りしたい点</div><p>この基準はマネジメントの現場でどう運用されているか。</p></div>
+
+<div class="ep"><div class="ep-hdr"><h4>閃きのプロセス——脳を疲労させる</h4><div class="ep-tags"><span class="ep-tag">HEURISTICS</span></div></div>
+<div class="ep-label">何が起きたか</div><p>大量の情報を詰め込み、3日間缶詰になり、脳を疲労させて潜在意識から答えを引き出す方法を定期的に実践。</p>
+<div class="ep-label">会社らしさ</div><p>直感は「人間の力ではなく潜在意識」。情報を混ぜて発酵させるプロセス。</p>
+<div class="ep-label">深掘りしたい点</div><p>このプロセスは組織として共有・再現できるものか。</p></div>
+
+<div class="ep"><div class="ep-hdr"><h4>2018年 民泊プロジェクト——「大丈夫」の教訓</h4><div class="ep-tags"><span class="ep-tag">HEURISTICS</span><span class="ep-tag">BEHAVIOR DNA</span></div></div>
+<div class="ep-label">何が起きたか</div><p>社員25名中12名を投入した大型案件で、先行メンバーが潰れた。「大丈夫です」が大丈夫じゃなかった。</p>
+<div class="ep-label">会社らしさ</div><p>困難な状況で適性が炙り出される。カバーし合い、役割を再編する力。</p>
+<div class="ep-label">深掘りしたい点</div><p>この経験が現在のアラート設計にどう残っているか。</p></div>
+
+<div class="ep"><div class="ep-hdr"><h4>AIペルソナの衝撃——「自分が話しているよう」</h4><div class="ep-tags"><span class="ep-tag">SYMBOL</span></div></div>
+<div class="ep-label">何が起きたか</div><p>インタビューデータを注入したAIが、山田様の言葉の癖やトーンを正確に再現。精度の高さに驚きと可能性を感じた。</p>
+<div class="ep-label">会社らしさ</div><p>企業人格のOS化が「できる」という実感。自己分析・採用・ブランディングへの応用可能性。</p>
+<div class="ep-label">深掘りしたい点</div><p>AI化された自分と向き合うことで何が変わるか。</p></div>
+
+<div class="ep"><div class="ep-hdr"><h4>売上の話をしない文化</h4><div class="ep-tags"><span class="ep-tag">CORE</span><span class="ep-tag">AESTHETICS</span></div></div>
+<div class="ep-label">何が起きたか</div><p>社内で売上の話はほとんどされない。売上は「設計」の結果として自然についてくるもの。</p>
+<div class="ep-label">会社らしさ</div><p>目先の数字を追うと思考の幅が狭くなるという信念。</p>
+<div class="ep-label">深掘りしたい点</div><p>この文化は全事業部で共通しているのか。</p></div>
+
+<div class="ep"><div class="ep-hdr"><h4>表彰制度は導入しない</h4><div class="ep-tags"><span class="ep-tag">TABOO</span><span class="ep-tag">AESTHETICS</span></div></div>
+<div class="ep-label">何が起きたか</div><p>表彰は「評価されたい」動機から嘘が生まれ、社員間に優劣の構図を作り、言行不一致を生む可能性がある。</p>
+<div class="ep-label">会社らしさ</div><p>外的動機づけへの警戒。内発的な動機を大切にする文化設計。</p>
+<div class="ep-label">深掘りしたい点</div><p>表彰に代わる承認の仕組みはあるのか。</p></div>
+
+<div class="ep"><div class="ep-hdr"><h4>「当たり前のことを当たり前にする」</h4><div class="ep-tags"><span class="ep-tag">AESTHETICS</span><span class="ep-tag">CORE</span></div></div>
+<div class="ep-label">何が起きたか</div><p>自社製品を一言で表すなら「当たり前のことを当たり前にする」。特別ではなく、あるべき姿を安定的に提供する。</p>
+<div class="ep-label">会社らしさ</div><p>「当たり前」の基準が高い。やばいことを先に言う、約束できないなら受けないも含む。</p>
+<div class="ep-label">深掘りしたい点</div><p>この「当たり前」は言語化されて共有されているか。</p></div>
+
+<div class="ep"><div class="ep-hdr"><h4>「有機農家」としての経営</h4><div class="ep-tags"><span class="ep-tag">SYMBOL</span><span class="ep-tag">AESTHETICS</span></div></div>
+<div class="ep-label">何が起きたか</div><p>良い組織から良いサービスが生まれる。「良い組織という土作り」が研究テーマ。個々のスタッフという作物を大切に育てる。</p>
+<div class="ep-label">会社らしさ</div><p>効率や生産性ではなく、土壌の質を見る経営哲学。</p>
+<div class="ep-label">深掘りしたい点</div><p>「有機農家」と「AI時代の効率化」をどう両立するか。</p></div>
+
+<div class="ep"><div class="ep-hdr"><h4>責任＝自由のチケット</h4><div class="ep-tags"><span class="ep-tag">CORE</span><span class="ep-tag">TENSION</span></div></div>
+<div class="ep-label">何が起きたか</div><p>「責任を取る」と「自由になる」は表裏一体。責任は懲罰ではなく、自由に動ける権限として再定義された。</p>
+<div class="ep-label">会社らしさ</div><p>日本の責任観とのギャップが組織運営の課題。</p>
+<div class="ep-label">深掘りしたい点</div><p>この責任観を社内・採用にどう翻訳するか。</p></div>
+
+<div class="ep"><div class="ep-hdr"><h4>小川のV字回復——他者に委ねる学び</h4><div class="ep-tags"><span class="ep-tag">TENSION</span><span class="ep-tag">HEURISTICS</span></div></div>
+<div class="ep-label">何が起きたか</div><p>カフェ閉鎖を決断した際、役員の小川氏が「赤字を1年で取り戻す」と燃えた。自分がもっと人に頼り委ねるべきだったと気づいた。</p>
+<div class="ep-label">会社らしさ</div><p>一人で抱え込まず、仲間の力を信じる。</p>
+<div class="ep-label">深掘りしたい点</div><p>「委ねる」判断基準はどう変化したか。</p></div>
+
+<div class="ep"><div class="ep-hdr"><h4>「はみ出し者」の歓迎</h4><div class="ep-tags"><span class="ep-tag">CORE</span></div></div>
+<div class="ep-label">何が起きたか</div><p>一般的な会社にフィットしない人が多い。「はみ出してください」という姿勢。</p>
+<div class="ep-label">会社らしさ</div><p>既成概念への反骨心が、組織の多様性を許容する文化を作っている。</p>
+<div class="ep-label">深掘りしたい点</div><p>はみ出すことと組織の規律をどう両立しているか。</p></div>
+
+<div class="ep"><div class="ep-hdr"><h4>8時間の労働時間を良くする</h4><div class="ep-tags"><span class="ep-tag">CORE</span></div></div>
+<div class="ep-label">何が起きたか</div><p>世の中を変えるという過大な目標ではなく、まず8時間を良くすることが現実的な社会貢献。家族や身近な範囲をケアせずに外を見るのは本末転倒。</p>
+<div class="ep-label">会社らしさ</div><p>地に足のついた存在意義。</p>
+<div class="ep-label">深掘りしたい点</div><p>この「8時間」の質は何で測れるのか。</p></div>
+
+<div class="ep"><div class="ep-hdr"><h4>海外展開＝思想の実験</h4><div class="ep-tags"><span class="ep-tag">CORE</span><span class="ep-tag">HEURISTICS</span></div></div>
+<div class="ep-label">何が起きたか</div><p>海外展開は市場拡大ではなく、新しい環境で何をどう感じるかの実験。家族で移住し、自分の人生を通じた実験。</p>
+<div class="ep-label">会社らしさ</div><p>事業は思想の器。</p>
+<div class="ep-label">深掘りしたい点</div><p>シンガポール以降、次の実験はどこで何を検証するのか。</p></div>
+
+<div class="ep"><div class="ep-hdr"><h4>父親との和解——土下座</h4><div class="ep-tags"><span class="ep-tag">TONE</span></div></div>
+<div class="ep-label">何が起きたか</div><p>結婚を機に実家へ帰り、土下座して謝罪。関係修復後は父親との会話が楽しみになった。土下座中に笑いそうになったというエピソード。</p>
+<div class="ep-label">会社らしさ</div><p>プライドより関係を優先できる。自分の非を認めることへの抵抗の低さ。</p>
+<div class="ep-label">深掘りしたい点</div><p>この「非を認める力」はマネジメントでどう発揮されているか。</p></div>
+
+</div>
+
+<hr class="sep">
+
+<!-- ===== 06 CANVAS ===== -->
+<div class="sec" id="sec-canvas">
+<div class="sec-n">06</div>
+<h2>Corpora Canvas v0.1 抜粋</h2>
+<table class="c-tbl">
+<thead><tr><th>Category</th><th>Key</th><th>Summary</th><th>Source</th></tr></thead>
+<tbody>
+<tr><td class="cc">CORE</td><td>秘密基地</td><td>人が集まり、役割が生まれ、挑戦と成長が起きる場を作る</td><td class="cs">S0/S1</td></tr>
+<tr><td class="cc">CORE</td><td>人が育つ環境</td><td>思いやり・自立・優しさ・楽しむ・高め合う状態を目指す</td><td class="cs">S1</td></tr>
+<tr><td class="cc">CORE</td><td>仕事は人と会える大義名分</td><td>時間と景色を共有するプラットフォーム</td><td class="cs">S1</td></tr>
+<tr><td class="cc">AESTHETICS</td><td>本当に作れる</td><td>品質あるものを作り切ることを重視する</td><td class="cs">S1/S3</td></tr>
+<tr><td class="cc">AESTHETICS</td><td>約束できることだけを言う</td><td>現実に基づいて約束する</td><td class="cs">S0/S3</td></tr>
+<tr><td class="cc">AESTHETICS</td><td>最後まで話す</td><td>一方的に切らず対話する</td><td class="cs">S1/S3</td></tr>
+<tr><td class="cc">AESTHETICS</td><td>現実を直視する</td><td>楽観を排し、数字と構造で把握する</td><td class="cs">S3</td></tr>
+<tr><td class="cc">TABOO</td><td>人をリソース扱い</td><td>人を金になる機能として扱わない</td><td class="cs">S0/S1</td></tr>
+<tr><td class="cc">TABOO</td><td>自分都合の嘘</td><td>保身・執着から出る嘘を避ける</td><td class="cs">S1</td></tr>
+<tr><td class="cc">TABOO</td><td>魂を売る売上</td><td>良いと思えないものを売らない</td><td class="cs">S0</td></tr>
+<tr><td class="cc">TABOO</td><td>下請け扱い</td><td>対話できない顧客とは続けない</td><td class="cs">S3</td></tr>
+<tr><td class="cc">TENSION</td><td>優しさ vs 経営判断</td><td>助けたい気持ちと組織を守る判断の間で揺れる</td><td class="cs">S1/S2</td></tr>
+<tr><td class="cc">TENSION</td><td>自由 vs 責任</td><td>責任の意味のギャップが組織課題</td><td class="cs">S3</td></tr>
+<tr><td class="cc">TENSION</td><td>やりたい vs できる</td><td>本人の希望より実力を発揮できる配置を重視</td><td class="cs">S1/S3</td></tr>
+<tr><td class="cc">BEHAVIOR DNA</td><td>やばいことほど先に言う</td><td>悪い報告を早く上げる</td><td class="cs">S3</td></tr>
+<tr><td class="cc">BEHAVIOR DNA</td><td>「大丈夫」を鵜呑みにしない</td><td>行動と状態を観察する</td><td class="cs">S2</td></tr>
+<tr><td class="cc">BEHAVIOR DNA</td><td>まず試させる、小さく始める</td><td>否定しないが、アジャイルに検証</td><td class="cs">S2</td></tr>
+<tr><td class="cc">HEURISTICS</td><td>人任せの立ち上げは失敗する</td><td>初期段階で強く関与しない事業は失敗しやすい</td><td class="cs">S1</td></tr>
+<tr><td class="cc">HEURISTICS</td><td>情が入ると判断を誤る</td><td>直感と情を分け、情が入った判断には慎重になる</td><td class="cs">S1</td></tr>
+<tr><td class="cc">HEURISTICS</td><td>小さく始めて早く学ぶ</td><td>大きく始めるとダメージが大きい</td><td class="cs">S2</td></tr>
+<tr><td class="cc">HEURISTICS</td><td>困難で適性が炙り出される</td><td>レモンを絞り切った後に違いが見える</td><td class="cs">S2</td></tr>
+<tr><td class="cc">SYMBOL</td><td>秘密基地</td><td>人が集まり、一緒に作る場の象徴</td><td class="cs">S0/S1</td></tr>
+<tr><td class="cc">SYMBOL</td><td>有機農家</td><td>良い土（組織）を作り、作物（人）を育てる</td><td class="cs">S3</td></tr>
+<tr><td class="cc">SYMBOL</td><td>医者</td><td>他者ができないことを実現し成果を出す存在</td><td class="cs">S2</td></tr>
+<tr><td class="cc">SYMBOL</td><td>0号目</td><td>まだスタートライン。完成ではなく途上</td><td class="cs">S1</td></tr>
+<tr><td class="cc">TONE</td><td>どう思う？</td><td>相手の考えを引き出し、自分の意見を返す</td><td class="cs">S1</td></tr>
+<tr><td class="cc">TONE</td><td>絶対できると思う</td><td>期待ではなく、可能性への確信として伝える</td><td class="cs">S1/S3</td></tr>
+</tbody>
+</table>
+</div>
+
+<hr class="sep">
+
+<div class="sec" id="sec-wordcloud">
+<div class="sec-n">07</div>
+<h2>頻出語から見えるConnect様の関心領域</h2>
+<p style="font-size:13.5px;color:var(--text2);margin-bottom:20px">セッション群の対話から、普遍語・相槌・進行語・形態素解析ノイズを除いて頻出語を抽出しました。上位語には「作る」「責任」「日本」「成長」「チーム」「自由」「対話」「品質」などが現れており、Connect様の対話が単なるIT事業の話に留まらず、<strong>作る力</strong>、<strong>人と組織</strong>、<strong>責任と自由</strong>、<strong>働くことと人生</strong>、<strong>日本と世界への接続</strong>へ広がっていることが見えてきます。</p>
+
+<div style="border:1px solid var(--border);padding:16px;margin-bottom:32px;background:var(--surface)">
+<div style="width:100%;overflow:hidden">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 975" style="width:100%;height:auto;display:block">
+  
+<style>
+  text {
+    font-family: "Noto Sans CJK JP", "Noto Sans JP", "Yu Gothic", "Hiragino Kaku Gothic ProN", "Meiryo", sans-serif !important;
+    font-weight: 700;
+    font-variant-ligatures: none;
+  }
+</style>
+
+  <rect width="1600" height="975" fill="#ffffff"/>
+  <g transform="translate(0,0)">
+    
+<style>text{font-family:'Noto Sans CJK JP';font-weight:bold;font-style:normal;}</style>
+<rect width="100%" height="100%" style="fill:white"></rect>
+<text transform="translate(722,627)" font-size="355" style="fill:#1f5f8b">作る</text>
+<text transform="translate(874,255)" font-size="291" style="fill:#667085">絶対</text>
+<text transform="translate(142,696)" font-size="288" style="fill:#667085">一緒</text>
+<text transform="translate(69,391)" font-size="284" style="fill:#9a3b3b">売上</text>
+<text transform="translate(4,790)" font-size="212" style="fill:#8a4f1d">責任</text>
+<text transform="translate(1573,726) rotate(-90)" font-size="210" style="fill:#9a3b3b">日本</text>
+<text transform="translate(507,171)" font-size="184" style="fill:#6b5aa6">成長</text>
+<text transform="translate(720,799)" font-size="160" style="fill:#6a6f2d">難しい</text>
+<text transform="translate(16,130)" font-size="147" style="fill:#6a6f2d">面白い</text>
+<text transform="translate(4,537)" font-size="107" style="fill:#667085">コネクト</text>
+<text transform="translate(1560,287) rotate(-90)" font-size="107" style="fill:#6a6f2d">経験</text>
+<text transform="translate(1249,801)" font-size="107" style="fill:#667085">やめる</text>
+<text transform="translate(617,293)" font-size="104" style="fill:#9a3b3b">お金</text>
+<text transform="translate(421,805)" font-size="100" style="fill:#2f6f4e">チーム</text>
+<text transform="translate(988,345)" font-size="73" style="fill:#6b5aa6">生きる</text>
+<text transform="translate(1008,658)" font-size="73" style="fill:#2f6f4e">上司</text>
+<text transform="translate(628,369)" font-size="73" style="fill:#8a4f1d">判断</text>
+<text transform="translate(891,646) rotate(-90)" font-size="72" style="fill:#667085">無理</text>
+<text transform="translate(409,360) rotate(-90)" font-size="72" style="fill:#6a6f2d">楽しい</text>
+<text transform="translate(70,369) rotate(-90)" font-size="72" style="fill:#667085">変わる</text>
+<text transform="translate(1234,339)" font-size="65" style="fill:#6a6f2d">大丈夫</text>
+<text transform="translate(1431,59)" font-size="65" style="fill:#667085">状態</text>
+<text transform="translate(1130,488) rotate(-90)" font-size="65" style="fill:#8a4f1d">自由</text>
+<text transform="translate(1191,700)" font-size="56" style="fill:#31415f">考え方</text>
+<text transform="translate(942,743)" font-size="55" style="fill:#9a3b3b">社会</text>
+<text transform="translate(15,597)" font-size="55" style="fill:#667085">深い</text>
+<text transform="translate(507,342)" font-size="55" style="fill:#6a6f2d">失敗</text>
+<text transform="translate(630,434)" font-size="54" style="fill:#6a6f2d">基地</text>
+<text transform="translate(507,132) rotate(-90)" font-size="54" style="fill:#6a6f2d">好き</text>
+<text transform="translate(761,648) rotate(-90)" font-size="54" style="fill:#31415f">価値</text>
+<text transform="translate(337,442)" font-size="42" style="fill:#667085">繋がる</text>
+<text transform="translate(837,316)" font-size="42" style="fill:#6a6f2d">大変</text>
+<text transform="translate(496,443)" font-size="42" style="fill:#6a6f2d">秘密</text>
+<text transform="translate(457,331) rotate(-90)" font-size="42" style="fill:#8a4f1d">決める</text>
+<text transform="translate(1278,40)" font-size="42" style="fill:#6a6f2d">期待</text>
+<text transform="translate(1424,539)" font-size="31" style="fill:#1f5f8b">エンジニア</text>
+<text transform="translate(1149,432)" font-size="31" style="fill:#8a4f1d">基準</text>
+<text transform="translate(162,431)" font-size="31" style="fill:#6b5aa6">働く</text>
+<text transform="translate(485,811)" font-size="31" style="fill:#2f6f4e">メンバー</text>
+<text transform="translate(1319,439)" font-size="31" style="fill:#1f5f8b">開発</text>
+<text transform="translate(922,312)" font-size="31" style="fill:#2f6f4e">お客</text>
+<text transform="translate(1178,811)" font-size="31" style="fill:#9a3b3b">創業</text>
+<text transform="translate(1013,530)" font-size="30" style="fill:#667085">伝える</text>
+<text transform="translate(1226,344) rotate(-90)" font-size="30" style="fill:#8a4f1d">自己</text>
+<text transform="translate(1127,41)" font-size="30" style="fill:#667085">能力</text>
+<text transform="translate(1048,217)" font-size="30" style="fill:#31415f">理解</text>
+<text transform="translate(809,221)" font-size="30" style="fill:#6b5aa6">目標</text>
+<text transform="translate(82,446)" font-size="30" style="fill:#6b5aa6">人生</text>
+<text transform="translate(969,610)" font-size="30" style="fill:#6b5aa6">成功</text>
+<text transform="translate(1368,478)" font-size="30" style="fill:#31415f">構造</text>
+<text transform="translate(3,404)" font-size="30" style="fill:#31415f">情報</text>
+<text transform="translate(317,239)" font-size="30" style="fill:#2f6f4e">仲間</text>
+<text transform="translate(545,221)" font-size="30" style="fill:#31415f">思想</text>
+<text transform="translate(499,28)" font-size="30" style="fill:#667085">頑張る</text>
+<text transform="translate(3,447)" font-size="30" style="fill:#2f6f4e">企業</text>
+<text transform="translate(1362,376)" font-size="30" style="fill:#31415f">言語</text>
+<text transform="translate(287,551)" font-size="30" style="fill:#31415f">対話</text>
+<text transform="translate(186,759)" font-size="30" style="fill:#8a4f1d">行動</text>
+<text transform="translate(1193,740)" font-size="30" style="fill:#31415f">認識</text>
+<text transform="translate(1458,308) rotate(-90)" font-size="30" style="fill:#2f6f4e">マネジメント</text>
+<text transform="translate(968,452)" font-size="30" style="fill:#8a4f1d">任せる</text>
+<text transform="translate(521,751)" font-size="29" style="fill:#667085">生まれる</text>
+<text transform="translate(230,441)" font-size="29" style="fill:#9a3b3b">カフェ</text>
+<text transform="translate(1152,204)" font-size="29" style="fill:#1f5f8b">現場</text>
+<text transform="translate(1071,590)" font-size="29" style="fill:#667085">意識</text>
+<text transform="translate(377,474)" font-size="29" style="fill:#6a6f2d">やばい</text>
+<text transform="translate(1117,719) rotate(-90)" font-size="29" style="fill:#9a3b3b">世界</text>
+<text transform="translate(1465,313)" font-size="29" style="fill:#9a3b3b">楽天</text>
+<text transform="translate(717,61) rotate(-90)" font-size="28" style="fill:#31415f">分析</text>
+<text transform="translate(1396,707) rotate(-90)" font-size="28" style="fill:#6a6f2d">信じる</text>
+<text transform="translate(14,505)" font-size="28" style="fill:#9a3b3b">海外</text>
+<text transform="translate(296,161)" font-size="28" style="fill:#31415f">勉強</text>
+<text transform="translate(1470,635) rotate(-90)" font-size="28" style="fill:#667085">役割</text>
+<text transform="translate(903,774) rotate(-90)" font-size="28" style="fill:#1f5f8b">サービス</text>
+<text transform="translate(1586,773) rotate(-90)" font-size="28" style="fill:#9a3b3b">利益</text>
+<text transform="translate(406,159)" font-size="28" style="fill:#31415f">定義</text>
+<text transform="translate(852,32)" font-size="28" style="fill:#667085">普通</text>
+<text transform="translate(1590,387) rotate(-90)" font-size="28" style="fill:#667085">変える</text>
+<text transform="translate(32,776) rotate(-90)" font-size="28" style="fill:#9a3b3b">日本人</text>
+<text transform="translate(1308,235)" font-size="28" style="fill:#667085">答え</text>
+<text transform="translate(384,556)" font-size="28" style="fill:#667085">意見</text>
+<text transform="translate(280,762)" font-size="28" style="fill:#667085">明確</text>
+<text transform="translate(1535,662) rotate(-90)" font-size="28" style="fill:#667085">気持ち</text>
+<text transform="translate(280,687)" font-size="28" style="fill:#667085">採用</text>
+<text transform="translate(372,682)" font-size="28" style="fill:#667085">大事</text>
+<text transform="translate(1175,173) rotate(-90)" font-size="28" style="fill:#667085">受ける</text>
+<text transform="translate(1240,526)" font-size="28" style="fill:#667085">掘る</text>
+<text transform="translate(969,642)" font-size="28" style="fill:#667085">書く</text>
+<text transform="translate(377,64) rotate(-90)" font-size="28" style="fill:#31415f">語る</text>
+<text transform="translate(950,687)" font-size="28" style="fill:#2f6f4e">友達</text>
+<text transform="translate(959,30)" font-size="28" style="fill:#2f6f4e">顧客</text>
+<text transform="translate(712,533)" font-size="28" style="fill:#31415f">感覚</text>
+<text transform="translate(175,552)" font-size="28" style="fill:#31415f">課題</text>
+<text transform="translate(375,750)" font-size="28" style="fill:#667085">怒る</text>
+<text transform="translate(1193,775)" font-size="28" style="fill:#667085">ダメ</text>
+<text transform="translate(218,396) rotate(-90)" font-size="28" style="fill:#667085">基づく</text>
+<text transform="translate(1273,280)" font-size="28" style="fill:#8a4f1d">決定</text>
+<text transform="translate(963,374)" font-size="25" style="fill:#667085">求める</text>
+<text transform="translate(201,636)" font-size="25" style="fill:#8a4f1d">選ぶ</text>
+<text transform="translate(1588,505) rotate(-90)" font-size="25" style="fill:#667085">起こす</text>
+
+  </g>
+  <line x1="60" y1="838" x2="1540" y2="838" stroke="#e6e8ef" stroke-width="2"/>
+  <text x="60" y="854" font-size="14" fill="#667085">色は文脈クラスタを示します。語の大きさは出現回数に基づきます。</text>
+  <g transform="translate(60,862)"><rect width="18" height="18" rx="4" fill="#1f5f8b"/><text x="28" y="16" font-size="16" fill="#344054">作る力・品質</text></g><g transform="translate(420,862)"><rect width="18" height="18" rx="4" fill="#2f6f4e"/><text x="28" y="16" font-size="16" fill="#344054">人と組織</text></g><g transform="translate(780,862)"><rect width="18" height="18" rx="4" fill="#8a4f1d"/><text x="28" y="16" font-size="16" fill="#344054">責任と自由・判断</text></g><g transform="translate(60,896)"><rect width="18" height="18" rx="4" fill="#6b5aa6"/><text x="28" y="16" font-size="16" fill="#344054">働くことと人生</text></g><g transform="translate(420,896)"><rect width="18" height="18" rx="4" fill="#31415f"/><text x="28" y="16" font-size="16" fill="#344054">価値・思想・対話</text></g><g transform="translate(780,896)"><rect width="18" height="18" rx="4" fill="#9a3b3b"/><text x="28" y="16" font-size="16" fill="#344054">事業・社会・市場</text></g><g transform="translate(60,930)"><rect width="18" height="18" rx="4" fill="#6a6f2d"/><text x="28" y="16" font-size="16" fill="#344054">象徴・経験・感情</text></g><g transform="translate(420,930)"><rect width="18" height="18" rx="4" fill="#667085"/><text x="28" y="16" font-size="16" fill="#344054">その他</text></g>
+</svg>
+
+</div>
+</div>
+
+<h3>主要語の文脈</h3>
+<p style="font-size:13px;color:var(--muted);margin-bottom:16px">上位語がどのような文脈で繰り返し語られているかの要約です。</p>
+
+<table class="c-tbl">
+<thead><tr><th style="width:80px">語</th><th style="width:50px">回数</th><th>文脈</th></tr></thead>
+<tbody>
+<tr><td class="cc">作る</td><td>209</td><td>「秘密基地を作る」「会社を作る」「環境を作る」「仕組みを作る」。Connect様の根本動詞。語るのではなく「作る」人たちであることの証。</td></tr>
+<tr><td class="cc">絶対</td><td>119</td><td>「絶対負けない」（創業の怒り）、「絶対できる」（人への確信）、「絶対ぶらさない」（価値観の死守）。「期待してるよ」は絶対に使わず「絶対できるよ」と言う。</td></tr>
+<tr><td class="cc">一緒</td><td>116</td><td>「一緒に作る」「一緒にいること自体が成功」「一緒にやろう」。仲間と共にあることへの強い志向。常に「一緒に」が前提。</td></tr>
+<tr><td class="cc">売上</td><td>112</td><td>「売上のために嘘をつくのは嫌」「売上を追わない」「売上の話をしない文化」。売上を否定しているのではなく、売上を目的化することへの警戒として頻出。</td></tr>
+<tr><td class="cc">責任</td><td>111</td><td>「代表としての責任」「任命側の責任」「責任＝自由のチケット」。懲罰としての責任ではなく、権限としての責任。日本語の責任観とのギャップが繰り返し議論される。</td></tr>
+<tr><td class="cc">日本</td><td>108</td><td>「日本人のクオリティは異常に高い」「日本の価値を世界へ」「日本市場の縮小」。国への誇りと危機感の二重構造。</td></tr>
+<tr><td class="cc">成長</td><td>105</td><td>「人が育つ環境」「成長を押し付けない」「自分が成長しなければ会社もそれ以上にいかない」。成長は強制ではなく、環境として用意するもの。</td></tr>
+<tr><td class="cc">面白い</td><td>89</td><td>「人の成長はめちゃめちゃ面白い」「未体験の分野への挑戦が面白い」「一緒にプロジェクトを進めること自体が面白い」。好奇心が行動の原動力。</td></tr>
+<tr><td class="cc">お金</td><td>80</td><td>「お金が絡むと人が変わる」「お金だけでは幸福は買えない」「お金のためにやるのではない」。お金は手段であり、振り回されることへの警戒が強い。</td></tr>
+<tr><td class="cc">チーム</td><td>76</td><td>「チームで成功を証明する」「チームの力不足」「チームで話し合って決める」。個人ではなくチーム単位で捉える志向。</td></tr>
+<tr><td class="cc">判断</td><td>75</td><td>「経営判断」「撤退判断」「情が入った判断」「投資判断」。判断が頻出するのは、常に岐路に立ってきた証拠。</td></tr>
+<tr><td class="cc">無理</td><td>73</td><td>「無理なものは無理」「無理に受けない」「無理に辞めさせない」「無理に成長させない」。無理をしないことが美学であり、品質と人の保護に直結。</td></tr>
+<tr><td class="cc">楽しい</td><td>72</td><td>「仕事が楽しい時間になれば人生が豊か」「人と一緒に働くことが楽しい」「事業自体が楽しい人が成功する」。楽しさは仕事と人生の質の指標。</td></tr>
+<tr><td class="cc">大丈夫</td><td>72</td><td>「大丈夫を鵜呑みにしない」（民泊PJの教訓）。言行不一致の象徴語として再定義された。</td></tr>
+<tr><td class="cc">自由</td><td>71</td><td>「責任＝自由のチケット」「職業選択の自由」「自由すぎる文化の注意点」。自由は無条件に与えられるものではなく、責任と対。</td></tr>
+<tr><td class="cc">考え方</td><td>71</td><td>「考え方に起因するミス」「考え方を変えれば行動が変わる」。行動の手前にある思考パターンへの関心が高い。</td></tr>
+<tr><td class="cc">失敗</td><td>67</td><td>「カフェの失敗」「小さく失敗して学ぶ」「失敗が会社にクリティカルでなければ試させる」。失敗は禁忌ではなく学習材料。撤退への抵抗のなさと対。</td></tr>
+<tr><td class="cc">好き</td><td>64</td><td>「人が好き」「一緒に作ることが好き」。好き嫌いが明確であることがキャラクターの一貫性を支えている。</td></tr>
+<tr><td class="cc">繋がる</td><td>62</td><td>「点と点が繋がる快感」「秘密基地の経験と今が繋がっている」「社名コネクト＝繋がり」。社名を体現する動詞。</td></tr>
+<tr><td class="cc">秘密</td><td>61</td><td>「秘密基地」の一部。幼少期の原体験から現在の会社観まで一貫して使われる中核的象徴。</td></tr>
+<tr><td class="cc">仲間</td><td>48</td><td>「仲間だと思っていた人に裏切られた」→「仲間が支えてくれる」→「仲間と一緒にいることが成功」。裏切りと再建を経た概念。</td></tr>
+<tr><td class="cc">任せる</td><td>45</td><td>「人任せは失敗する」「任せられる人には時間がかからない」「任せる側が悪い」。任せることの条件と責任が常にセット。</td></tr>
+<tr><td class="cc">やばい</td><td>41</td><td>「やばいことほど先に言え」。トラブル対応の鉄則。良い報告は後でいい。</td></tr>
+<tr><td class="cc">信じる</td><td>38</td><td>「人なんか信じる意味ない」→「他者に委ね信じることができていなかった」→「可能性を信じる」。信頼の喪失と再獲得の物語。</td></tr>
+<tr><td class="cc">日本人</td><td>36</td><td>「日本人のクオリティは異常に高い」「真面目でストイック」「本気を出せば世界一」。日本人への誇りと、その力を解放したいという願い。</td></tr>
+<tr><td class="cc">採用</td><td>33</td><td>「言行一致している人」「性格が良い人」「人が良いが最大の強み」。スキルより人間性。採用段階で文化を守る。</td></tr>
+</tbody>
+</table>
+
+<hr class="sep">
+
+<!-- ===== 09 SUMMARY ===== -->
+<div class="sec" id="sec-closing">
+<div class="sec-n">08</div>
+<h2>現時点の総括</h2>
+<div class="sum">
+<p>秘密基地を作りたかった少年がいた。</p>
+<p>多様な仲間と混ざり、役割を見つけ、何かを一緒に作ることの面白さを知った。やがてIT業界に入り、人を集めて売るだけの構造に怒りを覚え、仲間との裏切りや金銭問題を経験し、「そうではないやり方で勝てることを証明する」と決めた。</p>
+<p>創業は消去法だったかもしれない。しかし、兜町7平米のオフィスから始まった秘密基地は、楽天への一点集中、品質と実行力、セールス部門を持たないモデルで成長し、いまシンガポールまで広がっている。</p>
+<p>その過程で、カフェ事業の大失敗、ジョイント事業の破綻、メンバーの離脱、弟の喪失——数々の痛みを受け止めてきた。それでも人を切らず、最後まで話し、情が入りすぎて判断を誤ることもあった。</p>
+<p>現時点で見えているConnect様の輪郭は、こうです——</p>
+<p>人をリソースとして扱わない。約束できないことを約束しない。ちゃんと作ることに誇りを持つ。売上ではなく、人が育つ環境を作ろうとしている。仕事は人と時間を共有するプラットフォームであり、責任は自由に動くための権限である。日本の価値を世界へつなぐ土台を、有機農家のように、一人ひとりの土壌から作ろうとしている。</p>
+<p>まだ0号目。完成ではない。これから作っていく途上にある。</p>
+<p>今後のセッションでは、この輪郭に対して「本当にそうか」「どの言葉なら伝わるか」「どこがまだズレているか」を確認しながら、Connect様のCorporaを育てていきます。</p>
+</div>
+</div>
+
+<!-- ===== 10 WORD CLOUD ===== -->
+
+<hr class="sep">
+
+<!-- ===== 08 NEXT ===== -->
+<div class="sec" id="sec-next">
+<div class="sec-n">09</div>
+<h2>次回以降の深掘り方針</h2>
+<p>今回見えてきた仮説をもとに、以下を具体的なエピソードで深掘りしていきます。</p>
+<div class="nx"><h4>経営・マネジメント・運用OS</h4><ul><li>経営判断の優先順位</li><li>数字・人・理念がぶつかった時の判断</li><li>良いマネージャーの条件</li><li>AIに委ねる判断と、人が担う判断</li></ul></div>
+<div class="nx"><h4>価値衝突・揺らぎ・経験則</h4><ul><li>売上と信頼がぶつかった時</li><li>顧客要望とスタッフ保護がぶつかった時</li><li>人助けと組織負荷がぶつかった時</li></ul></div>
+<div class="nx"><h4>Canvas穴埋め</h4><ul><li>美学と禁忌の具体例</li><li>語り口の実例・反面教師</li><li>採用・評価における判断軸</li><li>Connect様らしい成功エピソード</li></ul></div>
+</div>
+
+<hr class="sep">
+
+<!-- ===== 07 QUESTIONS ===== -->
+<div class="sec" id="sec-questions">
+<div class="sec-n">10</div>
+<h2>Future Questions</h2>
+<div class="qi"><h4>1.「秘密基地」は拡大しても秘密基地でいられるのか</h4><p>人数・事業・拠点が増えた時に、秘密基地らしさをどう保つのか。自由・楽しさ・安心・挑戦を、どう仕組みにするのか。</p></div>
+<div class="qi"><h4>2.「職人集団」からどう進化するのか</h4><p>品質を出せる職人集団という輪郭が見える。設計・戦略・AI活用を担う会社へどう進化するか。</p></div>
+<div class="qi"><h4>3.「責任＝自由」をどう伝えるか</h4><p>一般的な責任観とのギャップが大きい。言葉の翻訳が必要。</p></div>
+<div class="qi"><h4>4.「やりたいよりできる」をどう採用メッセージにするか</h4><p>冷たく見えないように、可能性を活かす配置思想としてどう伝えるか。</p></div>
+<div class="qi"><h4>5. 情と経営判断の境界線</h4><p>人として助けたい時、経営者として止めるべき時、その境目をどう判断するか。</p></div>
+<div class="qi"><h4>6. AI時代に守るべき人間性</h4><p>構造化能力と人間性の両方が不可欠。何をどう育てるのか。</p></div>
+<div class="qi"><h4>7. 日本の価値を世界へつなぐ具体像</h4><p>各事業の役割と「Connect」の意味の広がり。</p></div>
+</div>
+
+</div>
+</div>
+</div>
+
+<script>
+const links=document.querySelectorAll(".sidebar-inner a");
+const sections=document.querySelectorAll("[id^=sec-]");
+const obs=new IntersectionObserver(entries=>{
+  entries.forEach(e=>{
+    if(e.isIntersecting){
+      links.forEach(l=>l.classList.remove("active"));
+      const a=document.querySelector(`.sidebar-inner a[href="#${e.target.id}"]`);
+      if(a)a.classList.add("active");
+    }
+  });
+},{rootMargin:"-10% 0px -80% 0px"});
+sections.forEach(s=>obs.observe(s));
+document.querySelectorAll(".sidebar-inner a").forEach(a=>{
+  a.addEventListener("click",e=>{
+    e.preventDefault();
+    document.querySelector(a.getAttribute("href")).scrollIntoView({behavior:"smooth",block:"start"});
+  });
+});
+</script>
+</body>
+</html>
