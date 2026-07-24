@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Connect Corpora — Thought Graph</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#0D1117;color:#C9D1D9;font-family:'Noto Sans JP',sans-serif;overflow:hidden;height:100vh;width:100vw}
+#graph{width:100%;height:100%}
+
+.link{stroke-opacity:.25;fill:none}
+.node{cursor:pointer}
+.node text{pointer-events:none;font-family:'Noto Sans JP',sans-serif}
+
+/* Header */
+.hdr{position:fixed;top:0;left:0;right:0;padding:16px 24px;display:flex;align-items:center;justify-content:space-between;z-index:10;background:linear-gradient(180deg,rgba(13,17,23,.95) 0%,rgba(13,17,23,0) 100%);pointer-events:none}
+.hdr>*{pointer-events:auto}
+.hdr h1{font-size:14px;font-weight:500;letter-spacing:.06em;color:#8B949E}
+.hdr h1 span{color:#E6EDF3;font-weight:600}
+
+/* Legend */
+.legend{position:fixed;bottom:20px;left:20px;z-index:10;display:flex;flex-wrap:wrap;gap:6px 14px;max-width:600px}
+.legend-item{display:flex;align-items:center;gap:5px;font-size:10.5px;color:#8B949E;letter-spacing:.03em}
+.legend-dot{width:8px;height:8px;border-radius:50%}
+
+/* Detail Panel */
+.panel{position:fixed;top:60px;right:20px;width:320px;max-height:calc(100vh - 100px);overflow-y:auto;background:rgba(22,27,34,.95);border:1px solid #30363D;padding:24px;z-index:20;display:none;backdrop-filter:blur(12px)}
+.panel.active{display:block}
+.panel-close{position:absolute;top:12px;right:14px;background:none;border:none;color:#8B949E;cursor:pointer;font-size:18px;line-height:1}
+.panel-close:hover{color:#E6EDF3}
+.panel-cat{font-size:10px;font-weight:600;letter-spacing:.1em;margin-bottom:8px;text-transform:uppercase}
+.panel h2{font-size:17px;font-weight:600;color:#E6EDF3;margin-bottom:12px;line-height:1.5}
+.panel p{font-size:13px;color:#8B949E;line-height:1.85;margin-bottom:10px}
+.panel .connections{margin-top:16px;padding-top:14px;border-top:1px solid #21262D}
+.panel .connections h3{font-size:11px;font-weight:600;letter-spacing:.06em;color:#484F58;margin-bottom:8px}
+.panel .conn-item{font-size:12px;color:#58A6FF;cursor:pointer;padding:3px 0}
+.panel .conn-item:hover{text-decoration:underline}
+
+/* Hint */
+.hint{position:fixed;bottom:20px;right:20px;font-size:11px;color:#484F58;z-index:10;text-align:right;line-height:1.7}
+
+@media(max-width:640px){
+  .panel{top:auto;bottom:0;right:0;left:0;width:100%;max-height:50vh;border:none;border-top:1px solid #30363D}
+  .legend{bottom:auto;top:auto;left:10px;right:10px;bottom:10px}
+  .hint{display:none}
+}
+</style>
+</head>
+<body>
+
+<div class="hdr">
+<h1><span>Connect</span> — Corpora Thought Graph</h1>
+</div>
+
+<div class="legend" id="legend"></div>
+
+<div class="panel" id="panel">
+<button class="panel-close" onclick="closePanel()">×</button>
+<div class="panel-cat" id="panel-cat"></div>
+<h2 id="panel-title"></h2>
+<p id="panel-desc"></p>
+<div class="connections" id="panel-conn"><h3>つながり</h3><div id="conn-list"></div></div>
+</div>
+
+<div class="hint">ドラッグで移動 · スクロールでズーム · クリックで詳細</div>
+
+<svg id="graph"></svg>
+
+<script>
+const categories = {
+  CORE:        { color: '#58A6FF', label: 'CORE — 中核価値' },
+  AESTHETICS:  { color: '#7EE787', label: 'AESTHETICS — 美意識' },
+  TABOO:       { color: '#F85149', label: 'TABOO — 禁忌' },
+  TENSION:     { color: '#D29922', label: 'TENSION — 揺らぎ' },
+  BDNA:        { color: '#79C0FF', label: 'BEHAVIOR DNA — 行動' },
+  HEURISTICS:  { color: '#A5D6FF', label: 'HEURISTICS — 経験則' },
+  SYMBOL:      { color: '#D2A8FF', label: 'SYMBOL — 象徴' },
+  TONE:        { color: '#FFA657', label: 'TONE — 語り口' },
+  EPISODE:     { color: '#8B949E', label: 'EPISODE — エピソード' },
+};
+
+const nodes = [
+  // CORE
+  {id:'秘密基地',cat:'CORE',desc:'人が集まり、役割が生まれ、挑戦と成長が起きる場を作る。幼少期の原体験から現在の会社観まで一貫する中核概念。',size:28},
+  {id:'人が育つ環境',cat:'CORE',desc:'成功の定義は売上・規模ではなく、思いやり・自立・優しさ・楽しむ・高め合うが実現している状態。',size:22},
+  {id:'人と会える大義名分',cat:'CORE',desc:'仕事は人と時間を共有し、同じ景色を見るためのプラットフォーム。',size:18},
+  {id:'作り続ける仕組み',cat:'CORE',desc:'会社は完成品ではなく、サグラダ・ファミリアのように思想が継承されながら進化する作品。',size:20},
+  {id:'街としての組織',cat:'CORE',desc:'家族ではなく街。全員が深く関与する必要はなく、住人がそれぞれの関与度で共存する。',size:18},
+  {id:'人×人の掛け算',cat:'CORE',desc:'事業計画が先ではなく、この人がいるからこれができる、という発想が先に来る。',size:16},
+
+  // AESTHETICS
+  {id:'本当に作れる',cat:'AESTHETICS',desc:'職人・大工のように、語るだけではなくちゃんと作ることへの誇り。品質を担保し最後まで責任を持つ。',size:16},
+  {id:'約束できることだけ',cat:'AESTHETICS',desc:'できないことをできると言わない。チームのレベルに合わせて目標を下げることも厭わない。',size:16},
+  {id:'最後まで話す',cat:'AESTHETICS',desc:'どの場面でも一方的に切らず、対話する。現実を直視するための行為。',size:14},
+  {id:'現実を直視する',cat:'AESTHETICS',desc:'楽観を排し、数字・背景・人・構造を含めて把握する勇気。',size:14},
+  {id:'バカを本気でやる',cat:'AESTHETICS',desc:'効率一辺倒ではなく、余白・無駄・遊びを本気でやることが人間らしさと創造性につながる。',size:16},
+  {id:'当たり前を当たり前に',cat:'AESTHETICS',desc:'自社製品を一言で表す言葉。ただしその「当たり前」の基準は驚くほど高い。',size:15},
+
+  // TABOO
+  {id:'人をリソース扱い',cat:'TABOO',desc:'人を金になる機能として扱う考え方。IT業界の多重下請け構造への怒りが創業動機に直結。',size:18},
+  {id:'自分都合の嘘',cat:'TABOO',desc:'保身・執着から生まれる嘘。相手のための嘘と自分のための嘘は明確に区別される。',size:14},
+  {id:'魂を売る売上',cat:'TABOO',desc:'良いと思えないものを売る、営業都合で押し込む行為。',size:14},
+  {id:'下請け扱い',cat:'TABOO',desc:'パートナーとして対話できない顧客との関係は最初から避ける。',size:13},
+  {id:'数字にハックされる',cat:'TABOO',desc:'数字を目的化し、専門性や顧客価値を見失うこと。',size:13},
+
+  // TENSION
+  {id:'優しさ vs 経営判断',cat:'TENSION',desc:'人を助けたい気持ちと、組織を守る判断の間で揺れる。情の厚さが経営の弱さにもなる。',size:16},
+  {id:'自由 vs 責任',cat:'TENSION',desc:'責任は自由のチケットだが、日本語の「責任」には懲罰のニュアンスがある。',size:14},
+  {id:'やりたい vs できる',cat:'TENSION',desc:'冷たい能力主義ではなく、三者を守る配置思想。しかし採用メッセージとのズレが生まれうる。',size:13},
+  {id:'AI vs 人間の希望',cat:'TENSION',desc:'AIで可能性が広がる一方、人間にどこまで希望を持てるかという根源的な問い。',size:15},
+  {id:'破壊 vs 犠牲',cat:'TENSION',desc:'市場を壊すことにワクワクするが、犠牲になる人をどう守るかで揺れる。',size:13},
+
+  // BDNA
+  {id:'やばいことほど先に',cat:'BDNA',desc:'良い報告より悪い報告を先に。トラブル対応の鉄則。',size:13},
+  {id:'大丈夫を鵜呑みにしない',cat:'BDNA',desc:'言行一致しているか行動と状態を観察する。2018年民泊PJの教訓。',size:12},
+  {id:'まず試させる',cat:'BDNA',desc:'失敗がクリティカルでない限り止めない。ただし小さく始める。',size:12},
+  {id:'共感で受け止める',cat:'BDNA',desc:'吐き出させ→分離→進捗認識→確信を伝える。100%の共感マネジメント。',size:14},
+  {id:'景色を見せる',cat:'BDNA',desc:'言葉ではなく体験で当事者意識を作る。3日間の現地体験。',size:13},
+
+  // HEURISTICS
+  {id:'人任せは失敗する',cat:'HEURISTICS',desc:'初期段階で自分が強く関与しない事業は失敗しやすい。',size:12},
+  {id:'情が入ると誤る',cat:'HEURISTICS',desc:'直感と情を分け、情が入った判断には慎重になる。',size:12},
+  {id:'小さく始めて早く学ぶ',cat:'HEURISTICS',desc:'大きく始めるとダメージが大きい。アジャイルに検証する。',size:12},
+  {id:'3つの円',cat:'HEURISTICS',desc:'世界一になれる領域 × 情熱 × 収益性の重なりに集中する。針ネズミの概念。',size:14},
+  {id:'足るを知る',cat:'HEURISTICS',desc:'贅沢や見栄のための経営には関心がない。うまい話は存在しない。',size:11},
+
+  // SYMBOL
+  {id:'サグラダ・ファミリア',cat:'SYMBOL',desc:'完成を急がず作り続ける作品としての会社。思想が受け継がれる組織の理想像。',size:16},
+  {id:'有機農家',cat:'SYMBOL',desc:'良い土（組織）を作り、個々の作物（人）を育てる経営哲学。',size:13},
+  {id:'0号目',cat:'SYMBOL',desc:'まだスタートライン。完成ではなく途上。',size:14},
+  {id:'時計を作る人',cat:'SYMBOL',desc:'派手な経営者ではなく、組織を精密に設計する人への共感。',size:14},
+  {id:'針ネズミ',cat:'SYMBOL',desc:'多才に広げるより一つの核心を突く。ジム・コリンズの影響。',size:12},
+  {id:'街と住人',cat:'SYMBOL',desc:'組織は全員が深く関わる家族ではなく、関与度が違う住人が共存する街。',size:13},
+  {id:'医者',cat:'SYMBOL',desc:'他者ができないことを実現し、リスクを負って成果を出す存在。',size:11},
+
+  // TONE
+  {id:'どう思う？',cat:'TONE',desc:'相手の考えを引き出し、そこから自分の意見を返す語り口。',size:12},
+  {id:'絶対できると思う',cat:'TONE',desc:'「期待している」ではなく「絶対できる」。可能性への確信として伝える。',size:13},
+  {id:'ノリの裏のシリアス',cat:'TONE',desc:'外からはノリで動いてるように見えるが、中ではシリアスな計算がある。あえて見せない。',size:13},
+
+  // EPISODES
+  {id:'EP:秘密基地の原体験',cat:'EPISODE',desc:'幼少期、裏山に仲間と秘密基地を作り、多様な人たちを巻き込んで役割を作っていた。',size:10},
+  {id:'EP:父親の外面と内面',cat:'EPISODE',desc:'父親が人前で良い顔をし家庭で厳しく当たる姿を見て、飾らない態度を取るようになった。',size:9},
+  {id:'EP:前職の裏切り',cat:'EPISODE',desc:'仲間と信じた人たちが金銭で変わり、「この会社に絶対負けない」が起業の燃料になった。',size:10},
+  {id:'EP:楽天一本勝負',cat:'EPISODE',desc:'大手競合の中で楽天に絞り、品質・コスト・実行力で選ばれた。',size:9},
+  {id:'EP:カフェ失敗 ▲4000万',cat:'EPISODE',desc:'神楽坂のカフェを大きく始めすぎて赤字。「小さく始める」の学びの源泉。',size:10},
+  {id:'EP:ジョイント事業の失敗',cat:'EPISODE',desc:'共同事業はほぼ全て失敗。パートナーが自己利益を優先。最後まで話した。',size:9},
+  {id:'EP:弟の自死',cat:'EPISODE',desc:'弟の統合失調症と自死、創業メンバーの喪失。「せめて関われる人は」という切実な願い。',size:11},
+  {id:'EP:嘘の美学',cat:'EPISODE',desc:'100%相手が主語かどうか。相手のための嘘は喜んでつく。',size:9},
+  {id:'EP:民泊PJ 2018',cat:'EPISODE',desc:'社員25名中12名投入の大型案件。「大丈夫」が大丈夫じゃなかった教訓。',size:10},
+  {id:'EP:社名コネクト',cat:'EPISODE',desc:'共同代表の「繋がりを大切にする」姿勢があって初めて名乗れた名前。',size:10},
+  {id:'EP:小川にSGを見せた',cat:'EPISODE',desc:'シンガポールの景色を3日間見せ、マレーシア拠点構想がスパークした。',size:9},
+  {id:'EP:共感マネジメント',cat:'EPISODE',desc:'苦しむ社員に100%共感。吐き出し→分離→進捗認識→確信。涙を流すことも。',size:10},
+  {id:'EP:売上を語らない文化',cat:'EPISODE',desc:'社内で売上の話はほぼしない。売上は設計の結果として自然についてくる。',size:9},
+  {id:'EP:接待もゴルフもやらない',cat:'EPISODE',desc:'形式的な上下関係は「ファンタジー」。義理で人の時間を奪わない。',size:8},
+  {id:'EP:責任＝自由のチケット',cat:'EPISODE',desc:'責任を取ることと自由になることは表裏一体。日本語の責任観とのギャップ。',size:9},
+  {id:'EP:閃きのプロセス',cat:'EPISODE',desc:'情報を詰め込み→脳を疲労させ→潜在意識から答えを引き出す。',size:8},
+  {id:'EP:表彰制度なし',cat:'EPISODE',desc:'表彰は言行不一致を生む可能性がある。外的動機づけへの警戒。',size:8},
+];
+
+const links = [
+  // CORE connections
+  {source:'秘密基地',target:'0号目'},
+  {source:'秘密基地',target:'サグラダ・ファミリア'},
+  {source:'秘密基地',target:'街としての組織'},
+  {source:'秘密基地',target:'バカを本気でやる'},
+  {source:'秘密基地',target:'EP:秘密基地の原体験'},
+  {source:'秘密基地',target:'人が育つ環境'},
+  {source:'人が育つ環境',target:'有機農家'},
+  {source:'人が育つ環境',target:'共感で受け止める'},
+  {source:'人が育つ環境',target:'EP:弟の自死'},
+  {source:'人が育つ環境',target:'EP:共感マネジメント'},
+  {source:'人と会える大義名分',target:'EP:社名コネクト'},
+  {source:'人と会える大義名分',target:'秘密基地'},
+  {source:'作り続ける仕組み',target:'サグラダ・ファミリア'},
+  {source:'作り続ける仕組み',target:'時計を作る人'},
+  {source:'街としての組織',target:'街と住人'},
+  {source:'街としての組織',target:'人×人の掛け算'},
+  {source:'人×人の掛け算',target:'景色を見せる'},
+  {source:'人×人の掛け算',target:'EP:小川にSGを見せた'},
+
+  // AESTHETICS connections
+  {source:'本当に作れる',target:'当たり前を当たり前に'},
+  {source:'本当に作れる',target:'EP:楽天一本勝負'},
+  {source:'約束できることだけ',target:'当たり前を当たり前に'},
+  {source:'約束できることだけ',target:'下請け扱い'},
+  {source:'最後まで話す',target:'EP:ジョイント事業の失敗'},
+  {source:'最後まで話す',target:'優しさ vs 経営判断'},
+  {source:'バカを本気でやる',target:'AI vs 人間の希望'},
+  {source:'現実を直視する',target:'EP:カフェ失敗 ▲4000万'},
+
+  // TABOO connections
+  {source:'人をリソース扱い',target:'EP:前職の裏切り'},
+  {source:'人をリソース扱い',target:'魂を売る売上'},
+  {source:'自分都合の嘘',target:'EP:嘘の美学'},
+  {source:'自分都合の嘘',target:'EP:父親の外面と内面'},
+  {source:'数字にハックされる',target:'EP:売上を語らない文化'},
+  {source:'下請け扱い',target:'EP:接待もゴルフもやらない'},
+
+  // TENSION connections
+  {source:'優しさ vs 経営判断',target:'情が入ると誤る'},
+  {source:'優しさ vs 経営判断',target:'EP:カフェ失敗 ▲4000万'},
+  {source:'優しさ vs 経営判断',target:'EP:弟の自死'},
+  {source:'自由 vs 責任',target:'EP:責任＝自由のチケット'},
+  {source:'AI vs 人間の希望',target:'破壊 vs 犠牲'},
+
+  // BDNA connections
+  {source:'やばいことほど先に',target:'大丈夫を鵜呑みにしない'},
+  {source:'やばいことほど先に',target:'EP:民泊PJ 2018'},
+  {source:'大丈夫を鵜呑みにしない',target:'EP:民泊PJ 2018'},
+  {source:'まず試させる',target:'小さく始めて早く学ぶ'},
+  {source:'共感で受け止める',target:'EP:共感マネジメント'},
+  {source:'景色を見せる',target:'EP:小川にSGを見せた'},
+
+  // HEURISTICS connections
+  {source:'人任せは失敗する',target:'EP:カフェ失敗 ▲4000万'},
+  {source:'小さく始めて早く学ぶ',target:'EP:カフェ失敗 ▲4000万'},
+  {source:'3つの円',target:'針ネズミ'},
+  {source:'3つの円',target:'EP:楽天一本勝負'},
+
+  // SYMBOL connections
+  {source:'時計を作る人',target:'ノリの裏のシリアス'},
+  {source:'サグラダ・ファミリア',target:'0号目'},
+  {source:'有機農家',target:'人が育つ環境'},
+
+  // TONE connections
+  {source:'絶対できると思う',target:'EP:前職の裏切り'},
+  {source:'ノリの裏のシリアス',target:'時計を作る人'},
+
+  // Cross-category
+  {source:'EP:表彰制度なし',target:'自分都合の嘘'},
+  {source:'EP:閃きのプロセス',target:'3つの円'},
+  {source:'足るを知る',target:'魂を売る売上'},
+  {source:'医者',target:'本当に作れる'},
+];
+
+// Build legend
+const legendEl = document.getElementById('legend');
+Object.entries(categories).forEach(([key, val]) => {
+  const item = document.createElement('div');
+  item.className = 'legend-item';
+  item.innerHTML = `<div class="legend-dot" style="background:${val.color}"></div>${val.label}`;
+  legendEl.appendChild(item);
+});
+
+// D3 Setup
+const width = window.innerWidth;
+const height = window.innerHeight;
+const svg = d3.select('#graph').attr('width', width).attr('height', height);
+
+const g = svg.append('g');
+
+// Zoom
+svg.call(d3.zoom()
+  .scaleExtent([0.2, 4])
+  .on('zoom', (e) => g.attr('transform', e.transform))
+);
+
+// Simulation
+const simulation = d3.forceSimulation(nodes)
+  .force('link', d3.forceLink(links).id(d => d.id).distance(d => {
+    const s = nodes.find(n => n.id === (typeof d.source === 'string' ? d.source : d.source.id));
+    const t = nodes.find(n => n.id === (typeof d.target === 'string' ? d.target : d.target.id));
+    if (s && t && s.cat === 'EPISODE' || t && t.cat === 'EPISODE') return 80;
+    return 120;
+  }))
+  .force('charge', d3.forceManyBody().strength(d => d.cat === 'EPISODE' ? -150 : -300))
+  .force('center', d3.forceCenter(width / 2, height / 2))
+  .force('collision', d3.forceCollide().radius(d => d.size + 8))
+  .force('x', d3.forceX(width / 2).strength(0.03))
+  .force('y', d3.forceY(height / 2).strength(0.03));
+
+// Links
+const link = g.append('g')
+  .selectAll('line')
+  .data(links)
+  .join('line')
+  .attr('class', 'link')
+  .attr('stroke', '#30363D')
+  .attr('stroke-width', 1);
+
+// Nodes
+const node = g.append('g')
+  .selectAll('g')
+  .data(nodes)
+  .join('g')
+  .attr('class', 'node')
+  .call(d3.drag()
+    .on('start', (e, d) => { if (!e.active) simulation.alphaTarget(0.3).restart(); d.fx = d.x; d.fy = d.y; })
+    .on('drag', (e, d) => { d.fx = e.x; d.fy = e.y; })
+    .on('end', (e, d) => { if (!e.active) simulation.alphaTarget(0); d.fx = null; d.fy = null; })
+  )
+  .on('click', (e, d) => showPanel(d));
+
+// Node circles
+node.append('circle')
+  .attr('r', d => d.size)
+  .attr('fill', d => categories[d.cat].color)
+  .attr('fill-opacity', d => d.cat === 'EPISODE' ? 0.15 : 0.2)
+  .attr('stroke', d => categories[d.cat].color)
+  .attr('stroke-width', d => d.cat === 'EPISODE' ? 1 : 1.5)
+  .attr('stroke-opacity', d => d.cat === 'EPISODE' ? 0.4 : 0.6);
+
+// Node labels
+node.append('text')
+  .text(d => d.id.replace('EP:',''))
+  .attr('dy', d => d.size + 14)
+  .attr('text-anchor', 'middle')
+  .attr('fill', d => d.cat === 'EPISODE' ? '#484F58' : '#8B949E')
+  .attr('font-size', d => d.cat === 'EPISODE' ? '9.5px' : (d.size > 18 ? '12px' : '10.5px'))
+  .attr('font-weight', d => d.size > 18 ? '500' : '400');
+
+// Tick
+simulation.on('tick', () => {
+  link.attr('x1', d => d.source.x).attr('y1', d => d.source.y)
+      .attr('x2', d => d.target.x).attr('y2', d => d.target.y);
+  node.attr('transform', d => `translate(${d.x},${d.y})`);
+});
+
+// Panel
+function showPanel(d) {
+  const panel = document.getElementById('panel');
+  document.getElementById('panel-cat').textContent = d.cat;
+  document.getElementById('panel-cat').style.color = categories[d.cat].color;
+  document.getElementById('panel-title').textContent = d.id.replace('EP:','');
+  document.getElementById('panel-desc').textContent = d.desc;
+
+  // Find connections
+  const conns = links.filter(l => {
+    const sid = typeof l.source === 'string' ? l.source : l.source.id;
+    const tid = typeof l.target === 'string' ? l.target : l.target.id;
+    return sid === d.id || tid === d.id;
+  });
+
+  const connList = document.getElementById('conn-list');
+  connList.innerHTML = '';
+  conns.forEach(l => {
+    const sid = typeof l.source === 'string' ? l.source : l.source.id;
+    const tid = typeof l.target === 'string' ? l.target : l.target.id;
+    const other = sid === d.id ? tid : sid;
+    const item = document.createElement('div');
+    item.className = 'conn-item';
+    item.textContent = other.replace('EP:','');
+    item.onclick = () => {
+      const target = nodes.find(n => n.id === other);
+      if (target) showPanel(target);
+    };
+    connList.appendChild(item);
+  });
+
+  panel.classList.add('active');
+
+  // Highlight
+  node.select('circle')
+    .attr('fill-opacity', n => {
+      if (n.id === d.id) return 0.5;
+      if (conns.some(l => {
+        const s = typeof l.source === 'string' ? l.source : l.source.id;
+        const t = typeof l.target === 'string' ? l.target : l.target.id;
+        return s === n.id || t === n.id;
+      })) return 0.35;
+      return 0.08;
+    })
+    .attr('stroke-opacity', n => {
+      if (n.id === d.id) return 1;
+      if (conns.some(l => {
+        const s = typeof l.source === 'string' ? l.source : l.source.id;
+        const t = typeof l.target === 'string' ? l.target : l.target.id;
+        return s === n.id || t === n.id;
+      })) return 0.7;
+      return 0.15;
+    });
+
+  link.attr('stroke', l => {
+    const s = typeof l.source === 'string' ? l.source : l.source.id;
+    const t = typeof l.target === 'string' ? l.target : l.target.id;
+    return (s === d.id || t === d.id) ? categories[d.cat].color : '#30363D';
+  }).attr('stroke-opacity', l => {
+    const s = typeof l.source === 'string' ? l.source : l.source.id;
+    const t = typeof l.target === 'string' ? l.target : l.target.id;
+    return (s === d.id || t === d.id) ? 0.5 : 0.1;
+  }).attr('stroke-width', l => {
+    const s = typeof l.source === 'string' ? l.source : l.source.id;
+    const t = typeof l.target === 'string' ? l.target : l.target.id;
+    return (s === d.id || t === d.id) ? 2 : 1;
+  });
+
+  node.select('text').attr('fill-opacity', n => {
+    if (n.id === d.id) return 1;
+    if (conns.some(l => {
+      const s = typeof l.source === 'string' ? l.source : l.source.id;
+      const t = typeof l.target === 'string' ? l.target : l.target.id;
+      return s === n.id || t === n.id;
+    })) return 0.8;
+    return 0.2;
+  });
+}
+
+function closePanel() {
+  document.getElementById('panel').classList.remove('active');
+  // Reset highlights
+  node.select('circle')
+    .attr('fill-opacity', d => d.cat === 'EPISODE' ? 0.15 : 0.2)
+    .attr('stroke-opacity', d => d.cat === 'EPISODE' ? 0.4 : 0.6);
+  link.attr('stroke', '#30363D').attr('stroke-opacity', 0.25).attr('stroke-width', 1);
+  node.select('text').attr('fill-opacity', 1);
+}
+
+// Initial zoom to fit
+setTimeout(() => {
+  svg.transition().duration(800).call(
+    d3.zoom().transform,
+    d3.zoomIdentity.translate(width * 0.05, height * 0.05).scale(0.9)
+  );
+}, 500);
+</script>
+</body>
+</html>
