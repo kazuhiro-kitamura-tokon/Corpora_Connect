@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Connect辞典</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;600;700&family=Noto+Sans+JP:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Noto Sans JP',sans-serif;background:#FAFAF8;color:#1A1A1A;-webkit-font-smoothing:antialiased}
+.page{max-width:720px;margin:0 auto;padding:64px 32px 120px}
+.hdr{padding:48px 0;margin-bottom:32px;border-bottom:1px solid #E4E2DE}
+.hdr-label{font-size:10px;font-weight:600;letter-spacing:.2em;color:#8A8A8A;margin-bottom:16px}
+.hdr h1{font-family:'Noto Serif JP',serif;font-size:32px;font-weight:700;line-height:1.4;margin-bottom:8px}
+.hdr .sub{font-family:'Noto Serif JP',serif;font-size:14px;color:#6A6A6A;line-height:1.7}
+.hdr .count{font-size:12px;color:#8A8A8A;margin-top:12px}
+.intro{font-size:14.5px;color:#4A4A4A;line-height:2.1;margin-bottom:32px;font-family:'Noto Serif JP',serif}
+.search-wrap{position:sticky;top:0;z-index:10;background:#FAFAF8;padding:16px 0 20px;margin-bottom:24px}
+.search-box{width:100%;padding:12px 16px 12px 44px;font-size:15px;font-family:'Noto Sans JP',sans-serif;border:1px solid #E4E2DE;background:#FFF;color:#1A1A1A;outline:none;transition:border-color .2s;appearance:none;border-radius:0}
+.search-box:focus{border-color:#2C5F7C}
+.search-box::placeholder{color:#BBB}
+.search-icon{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:#BBB;pointer-events:none}
+.search-wrap .inner{position:relative}
+.search-result-count{font-size:11px;color:#8A8A8A;margin-top:8px;min-height:16px}
+.entry{margin-bottom:44px;padding-bottom:44px;border-bottom:1px solid #F0EEEA;transition:opacity .2s}
+.entry:last-child{border-bottom:none}
+.entry.hidden{display:none}
+.entry-word{font-family:'Noto Serif JP',serif;font-size:26px;font-weight:700;margin-bottom:4px;letter-spacing:.02em}
+.entry-reading{font-size:12px;color:#8A8A8A;margin-bottom:20px;letter-spacing:.05em}
+.def{margin-bottom:16px}
+.def-label{font-size:10px;font-weight:600;letter-spacing:.12em;color:#8A8A8A;margin-bottom:6px}
+.def-general{font-size:14px;color:#8A8A8A;line-height:1.8;padding-left:16px;border-left:2px solid #E4E2DE}
+.def-connect{font-size:15.5px;color:#1A1A1A;line-height:2;padding-left:16px;border-left:2px solid #2C5F7C;margin-top:16px}
+.entry-quote{margin-top:16px;padding:14px 18px;background:#F4F4F2;font-family:'Noto Serif JP',serif;font-size:13.5px;color:#4A4A4A;line-height:1.9;font-style:italic}
+.entry-quote::before{content:'——';color:#CCC;margin-right:4px}
+.entry-note{margin-top:12px;font-size:12.5px;color:#8A8A8A;line-height:1.8}
+.footer{margin-top:64px;padding-top:24px;border-top:1px solid #E4E2DE;font-size:11px;color:#AAA;line-height:1.8}
+@media(max-width:640px){.page{padding:40px 20px 80px}.hdr h1{font-size:24px}.entry-word{font-size:22px}.search-wrap{padding:12px 0 16px}}
+</style>
+</head>
+<body>
+<div class="page">
+<div class="hdr">
+<div class="hdr-label">Corpora Glossary</div>
+<h1>Connect辞典</h1>
+<div class="sub">株式会社コネクトにおける言葉の再定義</div>
+<div class="count" id="total-count"></div>
+</div>
+<div class="intro">同じ日本語でも、Connectの中では意味が変わる言葉がある。9回のインタビューの中で、山田様が繰り返し独自の意味を込めて使っている言葉を、辞典として整理しました。</div>
+<div class="search-wrap"><div class="inner"><svg class="search-icon" width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="7.5" cy="7.5" r="5.5"/><path d="M12 12L16 16"/></svg><input type="text" class="search-box" id="search" placeholder="言葉を検索..."></div><div class="search-result-count" id="result-count"></div></div>
+<div id="entries">
+
+<div class="entry" data-words="秘密基地 ひみつきち 組織 原型 場所"><div class="entry-word">秘密基地</div><div class="entry-reading">ひみつきち</div><div class="def"><div class="def-label">一般</div><div class="def-general">子供が遊びで作る隠れ家。</div></div><div class="def"><div class="def-label">Connect</div><div class="def-connect">多様な人が集まり、役割が生まれ、安心して挑戦でき、一緒に何かを作れる場。会社そのものの原型であり、組織哲学の核。まだ「0号目」。</div></div></div>
+
+<div class="entry" data-words="責任 せきにん 自由 チケット 権限"><div class="entry-word">責任</div><div class="entry-reading">せきにん</div><div class="def"><div class="def-label">一般</div><div class="def-general">義務・罰・重荷。失敗した時に負うもの。</div></div><div class="def"><div class="def-label">Connect</div><div class="def-connect">自由に動くためのチケット。責任を持てる人には裁量が渡される。懲罰ではなく権限。持てない人に任せたなら、それは任命した側の責任。</div></div><div class="entry-note">日本語の「責任」が持つ重さとのギャップが、社内浸透の課題として認識されている。</div></div>
+
+<div class="entry" data-words="売上 うりあげ 数字 設計 結果"><div class="entry-word">売上</div><div class="entry-reading">うりあげ</div><div class="def"><div class="def-label">一般</div><div class="def-general">経営の最重要指標。追い、伸ばし、報告するもの。</div></div><div class="def"><div class="def-label">Connect</div><div class="def-connect">設計の結果として自然についてくるもの。社内でほとんど話題にしない。経営者の頭の中には明確な数字があるが、現場には押し付けない。専門職が数字に追われると専門性を失うため。</div></div></div>
+
+<div class="entry" data-words="失敗 しっぱい 撤退 学び カフェ"><div class="entry-word">失敗</div><div class="entry-reading">しっぱい</div><div class="def"><div class="def-label">一般</div><div class="def-general">避けるべきもの。恥ずかしいこと。</div></div><div class="def"><div class="def-label">Connect</div><div class="def-connect">学びの抽出元。撤退に抵抗はない。「またやればいい」。ただし美談にはしない。正確に何が起きたかを記録し、次に活かす。会社にクリティカルでなければ、まず試させる。</div></div><div class="entry-quote">カフェ事業でマイナス4,000万。モンゴルでは横領金の送金で綱渡り。ジョイント事業はほぼ全滅。それでも「最後まで話した」。</div></div>
+
+<div class="entry" data-words="当たり前 あたりまえ 品質 基準 美学"><div class="entry-word">当たり前</div><div class="entry-reading">あたりまえ</div><div class="def"><div class="def-label">一般</div><div class="def-general">普通のこと。特別ではないこと。</div></div><div class="def"><div class="def-label">Connect</div><div class="def-connect">驚くほど高い基準を内包した言葉。約束できないことはしない、スタッフの苦労に見合わない案件は断る、やばいことほど先に報告する——これら全てが「当たり前」に含まれている。</div></div></div>
+
+<div class="entry" data-words="大丈夫 だいじょうぶ 危険 鵜呑み 民泊"><div class="entry-word">大丈夫</div><div class="entry-reading">だいじょうぶ</div><div class="def"><div class="def-label">一般</div><div class="def-general">安心・問題ないことを示す言葉。</div></div><div class="def"><div class="def-label">Connect</div><div class="def-connect">鵜呑みにしてはいけない危険信号。2018年の民泊プロジェクトで、メンバーの「大丈夫です」が大丈夫ではなかった教訓から。言葉ではなく、行動と状態を観察する。</div></div></div>
+
+<div class="entry" data-words="利己的 りこてき 動機 内面 パフォーマンス"><div class="entry-word">利己的</div><div class="entry-reading">りこてき</div><div class="def"><div class="def-label">一般</div><div class="def-general">自分勝手。周囲を顧みない態度。</div></div><div class="def"><div class="def-label">Connect</div><div class="def-connect">自分の内面と一致した動機で動くこと。他人の顔色を伺って無理をするのではなく、自分が納得できる意志を持って仕事に向き合う姿勢。個々がこの状態にある時、組織のパフォーマンスは最大化する。</div></div></div>
+
+<div class="entry" data-words="家族 かぞく ファミリー 仲間 コミュニティ"><div class="entry-word">家族</div><div class="entry-reading">かぞく</div><div class="def"><div class="def-label">一般</div><div class="def-general">温かい絆。無条件の愛。</div></div><div class="def"><div class="def-label">Connect</div><div class="def-connect">使わない言葉。日本語の「家族」には重圧・上下関係・暗黙の従属が含まれる。Connectが目指すのは「仲間」であり「街の住人」。全員が深く関与する必要はなく、それぞれの関与度で共存できる場。</div></div></div>
+
+<div class="entry" data-words="嘘 うそ 主語 保身 相手"><div class="entry-word">嘘</div><div class="entry-reading">うそ</div><div class="def"><div class="def-label">一般</div><div class="def-general">悪いこと。つくべきではないもの。</div></div><div class="def"><div class="def-label">Connect</div><div class="def-connect">主語が誰かで意味が変わる。100%相手のためにつく嘘は、喜んでつく。保身や執着から生まれる嘘は許さない。境界線は「その嘘の主語が自分か、相手か」。</div></div></div>
+
+<div class="entry" data-words="絶対 ぜったい 確信 期待 できる"><div class="entry-word">絶対</div><div class="entry-reading">ぜったい</div><div class="def"><div class="def-label">一般</div><div class="def-general">強い断定。時に軽く使われる副詞。</div></div><div class="def"><div class="def-label">Connect</div><div class="def-connect">確信の語彙。「絶対できると思う」は期待ではなく、相手の可能性への確信として発される。「期待しているよ」は使わない。「絶対負けない」は創業の燃料。「絶対ぶらさない」は価値観の死守。</div></div></div>
+
+<div class="entry" data-words="器 うつわ リーダー 受け入れる 容量"><div class="entry-word">器</div><div class="entry-reading">うつわ</div><div class="def"><div class="def-label">一般</div><div class="def-general">能力や才能の大きさ。</div></div><div class="def"><div class="def-label">Connect</div><div class="def-connect">他者を受け入れる容量。良い面も悪い面も認識した上で、そのありのままを「よしとする」こと。日常的に思考を研ぎ澄ませることで育まれる。</div></div></div>
+
+<div class="entry" data-words="作る つくる 職人 大工 根本"><div class="entry-word">作る</div><div class="entry-reading">つくる</div><div class="def"><div class="def-label">一般</div><div class="def-general">物を製造する。何かを形にする。</div></div><div class="def"><div class="def-label">Connect</div><div class="def-connect">Connectの根本動詞。全インタビューで出現回数最多。秘密基地を作る、会社を作る、環境を作る、仕組みを作る。語るのではなく「作る」人たちであるという自己認識。職人・大工のように、ちゃんと作ることへの誇り。</div></div></div>
+
+<div class="entry" data-words="無理 むり 断る スタッフ 保護 不義"><div class="entry-word">無理</div><div class="entry-reading">むり</div><div class="def"><div class="def-label">一般</div><div class="def-general">難しいこと。できないことの表明。</div></div><div class="def"><div class="def-label">Connect</div><div class="def-connect">美学としての「しない」。無理に受けない、無理に辞めさせない、無理に成長させない。無理をしないことがスタッフの保護と品質の維持に直結している。苦労に見合わない案件は「不義」として断る。</div></div></div>
+
+<div class="entry" data-words="面白い おもしろい 好奇心 原動力 成長"><div class="entry-word">面白い</div><div class="entry-reading">おもしろい</div><div class="def"><div class="def-label">一般</div><div class="def-general">楽しい、笑えるという感覚。</div></div><div class="def"><div class="def-label">Connect</div><div class="def-connect">行動の原動力そのもの。人の成長を見ること、未体験の分野に踏み込むこと、仲間と一緒にプロジェクトを進めること——全てが「面白い」で動いている。面白くないことは長く続かない。</div></div></div>
+
+<div class="entry" data-words="ありのまま 削ぎ落とす 独自性 そのまま 裸"><div class="entry-word">ありのまま</div><div class="entry-reading">ありのまま</div><div class="def"><div class="def-label">一般</div><div class="def-general">飾らない自然体。そのまま。</div></div><div class="def"><div class="def-label">Connect</div><div class="def-connect">何かを付け加えることではなく、美しくない部分を削ぎ落とし、その人本来の独自性を引き出す作業。放置とは違う。ありのままでいられる環境を意図的に設計している。最初から裸の状態でいる方が、偽りの人格を維持するプレッシャーから解放される。</div></div></div>
+
+<div class="entry" data-words="仲間 なかま 裏切り 再建 一緒"><div class="entry-word">仲間</div><div class="entry-reading">なかま</div><div class="def"><div class="def-label">一般</div><div class="def-general">友人。気の合う人たち。</div></div><div class="def"><div class="def-label">Connect</div><div class="def-connect">裏切りと再建を経て再定義された概念。理想化されていない。仲間だと思っていた人に裏切られ、「人なんか信じる意味ない」と感じた時期を経て、それでも一緒にいることを選んだ人たち。</div></div></div>
+
+<div class="entry" data-words="街 まち 住人 組織 関与度"><div class="entry-word">街</div><div class="entry-reading">まち</div><div class="def"><div class="def-label">一般</div><div class="def-general">人が暮らす地域。都市。</div></div><div class="def"><div class="def-label">Connect</div><div class="def-connect">組織のモデル。「家族」の代わりに使う比喩。全員が深く関与する必要はなく、住人がそれぞれの関与度で共存する。仕事だけしている人がいてもいい。街の運営に関わりたい人にはどこまでも門を開く。</div></div></div>
+
+<div class="entry" data-words="やばい 報告 トラブル 先に"><div class="entry-word">やばい</div><div class="entry-reading">やばい</div><div class="def"><div class="def-label">一般</div><div class="def-general">若者言葉。すごい、危ないの両義。</div></div><div class="def"><div class="def-label">Connect</div><div class="def-connect">即座の報告を起動するトリガーワード。「やばいことほど先に言え」が鉄則。良い報告は後でいい。悪い兆候・トラブルを早く上げることが、組織の生存に直結している。</div></div></div>
+
+<div class="entry" data-words="成長 せいちょう 環境 押し付け 育つ"><div class="entry-word">成長</div><div class="entry-reading">せいちょう</div><div class="def"><div class="def-label">一般</div><div class="def-general">スキルや能力が向上すること。KPIで測るもの。</div></div><div class="def"><div class="def-label">Connect</div><div class="def-connect">押し付けるものではなく、環境として用意するもの。成長したくない人もいて、それは否定しない。ただし評価には差をつける。成長の定義は売上ではなく「思いやり・自立・優しさ・楽しむ・高め合う」が実現している状態。</div></div></div>
+
+<div class="entry" data-words="自由 じゆう 責任 条件 誤解"><div class="entry-word">自由</div><div class="entry-reading">じゆう</div><div class="def"><div class="def-label">一般</div><div class="def-general">束縛がない状態。好きにできること。</div></div><div class="def"><div class="def-label">Connect</div><div class="def-connect">責任とセットでのみ成立するもの。無条件には与えられない。責任を持てる人に渡される権限としての自由。自由すぎる文化が未経験者に誤解されるリスクも認識されている。</div></div></div>
+
+<div class="entry" data-words="対話 たいわ マネジメント 話す 共感"><div class="entry-word">対話</div><div class="entry-reading">たいわ</div><div class="def"><div class="def-label">一般</div><div class="def-general">会話。コミュニケーション。</div></div><div class="def"><div class="def-label">Connect</div><div class="def-connect">経営の最も重要なツール。数字の押し付けではなく、一緒にどこへ向かうかを共感するための行為。対話を諦めたらズレはどんどん大きくなる。10年以上の対話で人を育てた経験もある。社員が涙を流すほどの深さを持つこともある。</div></div></div>
+
+<div class="entry" data-words="パートナー 下請け 取引 対等 顧客"><div class="entry-word">パートナー</div><div class="entry-reading">ぱーとなー</div><div class="def"><div class="def-label">一般</div><div class="def-general">取引先。協力関係。</div></div><div class="def"><div class="def-label">Connect</div><div class="def-connect">顧客との関係の最低条件。パートナーとして対話できるかどうかで取引を判断する。金額から入るバイヤー感覚の相手とはやらない。下請け扱いする関係には最初から入らない。</div></div></div>
+
+<div class="entry" data-words="期待 きたい 確信 絶対 できる"><div class="entry-word">期待</div><div class="entry-reading">きたい</div><div class="def"><div class="def-label">一般</div><div class="def-general">良い結果を待ち望むこと。励ましの言葉。</div></div><div class="def"><div class="def-label">Connect</div><div class="def-connect">使わない言葉。「期待しているよ」は言わない。代わりに「絶対できると思う」と伝える。期待は上から下への一方的な投げかけであり、確信は対等な信頼の表明。</div></div></div>
+
+<div class="entry" data-words="表彰 ひょうしょう 制度 嘘 承認"><div class="entry-word">表彰</div><div class="entry-reading">ひょうしょう</div><div class="def"><div class="def-label">一般</div><div class="def-general">優秀な人を称え、モチベーションを高める仕組み。</div></div><div class="def"><div class="def-label">Connect</div><div class="def-connect">導入しないもの。表彰は「評価されたい」という動機から嘘が生まれ、社員間に優劣の構図を作り、言行不一致を招く。外的動機づけへの警戒が背景にある。</div></div></div>
+
+<div class="entry" data-words="接待 せったい ゴルフ 年賀状 ファンタジー"><div class="entry-word">接待</div><div class="entry-reading">せったい</div><div class="def"><div class="def-label">一般</div><div class="def-general">取引先をもてなすビジネス慣習。</div></div><div class="def"><div class="def-label">Connect</div><div class="def-connect">やらない。ゴルフもやらない。義理の年賀状も出さない。形式的な上下関係は「ファンタジー」。仕事の本質に関係しない強制で人の時間を奪わない。</div></div></div>
+
+<div class="entry" data-words="魂 たましい 売る 営業 都合"><div class="entry-word">魂</div><div class="entry-reading">たましい</div><div class="def"><div class="def-label">一般</div><div class="def-general">精神。人の根幹にあるもの。</div></div><div class="def"><div class="def-label">Connect</div><div class="def-connect">「売ってはいけないもの」として登場する語。良いと思えないものを売る、営業都合で押し込む行為は、魂を売ることに等しい。最大の禁忌の一つ。</div></div></div>
+
+<div class="entry" data-words="余白 よはく バカ 遊び 人間性 AI"><div class="entry-word">余白</div><div class="entry-reading">よはく</div><div class="def"><div class="def-label">一般</div><div class="def-general">紙の空白部分。隙間。</div></div><div class="def"><div class="def-label">Connect</div><div class="def-connect">AI時代に人間に残る最も重要な価値。無駄、遊び、バカを本気でやること、一緒に笑うこと。効率化だけでは秘密基地は秘密基地でなくなる。効率の外にある創造性の源泉。</div></div></div>
+
+<div class="entry" data-words="降りてくる おりてくる 直感 スパーク 潜在意識"><div class="entry-word">降りてくる</div><div class="entry-reading">おりてくる</div><div class="def"><div class="def-label">一般</div><div class="def-general">上から来る。スピリチュアルな表現。</div></div><div class="def"><div class="def-label">Connect</div><div class="def-connect">直感の獲得プロセスを表す言葉。膨大な経験・仮説検証・対話・身体感覚を脳に詰め込み、疲労させ、潜在意識に委ねる。すると答えが「降りてくる」。スピリチュアルではなく、設計された思考法。</div></div></div>
+
+<div class="entry" data-words="景色 けしき 見せる 体験 当事者意識"><div class="entry-word">景色</div><div class="entry-reading">けしき</div><div class="def"><div class="def-label">一般</div><div class="def-general">風景。自然の眺め。</div></div><div class="def"><div class="def-label">Connect</div><div class="def-connect">人を動かすための手段。言葉ではなく、実際の景色を見せることで当事者意識を作る。シンガポールに連れて行き、生活とキャッシュフローを3日間体験させたら、マレーシア拠点構想がスパークした。</div></div></div>
+
+<div class="entry" data-words="繋がる つながる コネクト 点 社名"><div class="entry-word">繋がる</div><div class="entry-reading">つながる</div><div class="def"><div class="def-label">一般</div><div class="def-general">接続する。関係を持つ。</div></div><div class="def"><div class="def-label">Connect</div><div class="def-connect">社名そのものを体現する動詞。秘密基地の経験と今の経営が繋がっている、点と点が繋がる快感、人と人が繋がるプラットフォームとしての仕事。一人では名乗れなかった社名。</div></div></div>
+
+<div class="entry" data-words="勾配 こうばい 登る 一緒 トップダウン"><div class="entry-word">勾配</div><div class="entry-reading">こうばい</div><div class="def"><div class="def-label">一般</div><div class="def-general">坂の傾斜。角度。</div></div><div class="def"><div class="def-label">Connect</div><div class="def-connect">マネジメントの比喩。トップダウンで売上を押し付けるのではなく、どこへ向かうかを共感して「一緒に登っていく勾配」を作る。対話を通じて、チーム全員が同じ方向を向く状態を設計する。</div></div></div>
+
+<div class="entry" data-words="強さ つよさ 弱さ 受容 認める"><div class="entry-word">強さ</div><div class="entry-reading">つよさ</div><div class="def"><div class="def-label">一般</div><div class="def-general">力があること。負けないこと。</div></div><div class="def"><div class="def-label">Connect</div><div class="def-connect">自分自身の弱さや至らなさを認め、受け入れること。弱い立場を悪用して他者のせいにする振る舞いは「卑怯」。本当に強い人は、自分の弱さを隠さない。</div></div></div>
+
+<div class="entry" data-words="刀 かたな 研ぐ 思考 ルーティン モレスキン"><div class="entry-word">刀を研ぐ</div><div class="entry-reading">かたなをとぐ</div><div class="def"><div class="def-label">一般</div><div class="def-general">武器の手入れ。準備をする。</div></div><div class="def"><div class="def-label">Connect</div><div class="def-connect">日常的に思考を研ぎ澄ませる行為そのもの。2000年からモレスキンのノートに思考を書き出し続けている。プライベートとビジネスの垣根なく常に計画を練ることに喜びを感じる。考えることは、仕事ではなく生き方。</div></div></div>
+
+</div>
+
+<div class="footer">Connect辞典 — 2026年3月〜7月 全9回のインタビューから抽出</div>
+</div>
+
+<script>
+const entries=document.querySelectorAll('.entry');
+document.getElementById('total-count').textContent=entries.length+'語 収録';
+const searchInput=document.getElementById('search');
+const resultCount=document.getElementById('result-count');
+searchInput.addEventListener('input',()=>{
+const q=searchInput.value.trim().toLowerCase();
+let v=0;
+entries.forEach(e=>{
+if(!q){e.classList.remove('hidden');v++;return}
+const s=(e.getAttribute('data-words')+' '+e.querySelector('.entry-word').textContent+' '+e.querySelector('.def-connect').textContent).toLowerCase();
+if(s.includes(q)){e.classList.remove('hidden');v++}else{e.classList.add('hidden')}
+});
+resultCount.textContent=q?v+'件 見つかりました':'';
+});
+</script>
+</body>
+</html>
